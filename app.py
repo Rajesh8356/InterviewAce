@@ -61,9 +61,9 @@ import pandas as pd # Added for get_analysis_data
 import speech_recognition as sr
 import threading
 import queue
-import sounddevice as sd
-from scipy.io import wavfile
-import noisereduce as nr
+#import sounddevice as sd
+#from scipy.io import wavfile
+#import noisereduce as nr
 from flask_session import Session
 from datetime import datetime, timedelta
 app = Flask(__name__)
@@ -115,13 +115,15 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Directory to store CSV files
-CSV_FOLDER = r"F:/INTERNSHIP - IV SEM/interview_15-09-2025/project5_interview/output_csv"
+# Change these:
+CSV_FOLDER = 'output_csv'
+IMAGE_FOLDER = 'images'
+UPLOAD_FOLDER = 'uploads'
+
+# Create directories if they don't exist
 os.makedirs(CSV_FOLDER, exist_ok=True)
-
-# Directory to store captured images
-IMAGE_FOLDER = r"F:/INTERNSHIP - IV SEM/interview_15-09-2025/project5_interview/images"
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
-
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Face recognition setup
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 recognizer = cv2.face.LBPHFaceRecognizer_create()
@@ -2819,24 +2821,27 @@ def generate_hr_question(prev_question, prev_answer, asked_questions, user_name)
 def process_audio(user_id):
     try:
         audio_file = request.files['audio']
+        
+        # Use speech_recognition directly
+        r = sr.Recognizer()
+        
+        # Save the uploaded file temporarily
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
             audio_file.save(tmp.name)
-            # Optional: Noise reduction
-            rate, data = wavfile.read(tmp.name)
-            reduced = nr.reduce_noise(y=data, sr=rate)
-            wavfile.write(tmp.name, rate, reduced)
-            # Recognize
-            r = sr.Recognizer()
+            
+            # Recognize speech
             with sr.AudioFile(tmp.name) as source:
                 audio = r.record(source)
-                text = r.recognize_google(audio)  # Or use recognize_sphinx for offline
-        os.unlink(tmp.name)
-        # Store/process text as needed (e.g., evaluate answer)
+                text = r.recognize_google(audio)
+            
+            # Clean up
+            os.unlink(tmp.name)
+            
         return jsonify({'success': True, 'text': text})
     except Exception as e:
         logger.error(f"Audio processing error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
-
+        
 def get_fallback_technical_question(asked_questions, user_name):
     """Fallback technical questions when generation fails"""
     fallback_tech_questions = [
@@ -3788,4 +3793,5 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)
+
 
