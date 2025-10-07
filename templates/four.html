@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewAce - Resume Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #1a3a5f;
+            --primary-dark: #1a3a5f;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --light: #f9fafb;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light-gray: #e5e7eb;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg,#224062 0%, #a478ca 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgb(255, 255, 255);
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(79, 70, 229, 0.05);
+            border-radius: 12px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+
+        .user-details h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .nav-menu {
+    list-style: none;
+    margin-bottom: 1rem; /* just a small spacing after menu */
+}
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .logout-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-text p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+            background-color: var(--primary-dark);
+        }
+
+        .button i {
+            margin-right: 0.5rem;
+        }
+
+        .content-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .content-box:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .content-box h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        /* Form Elements */
+        .file-input {
+            margin-bottom: 1.5rem;
+        }
+
+        .file-input input[type="file"] {
+            display: none;
+        }
+
+        .file-input label {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+        }
+
+        .file-input label:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .file-input label i {
+            margin-right: 0.5rem;
+        }
+
+        #file-name {
+            margin-top: 0.75rem;
+            font-style: italic;
+            padding: 0 0.75rem;
+            color: var(--gray);
+        }
+
+        .job-description textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .job-description textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Analysis Results */
+        .success { 
+            color: var(--secondary);
+            font-weight: 600; 
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .analysis-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .analysis-list li {
+            background-color: rgba(79, 70, 229, 0.05);
+            margin-bottom: 0.75rem;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--accent);
+        }
+
+        .analysis-list li:hover {
+            background-color: rgba(79, 70, 229, 0.1);
+            transform: translateX(5px);
+        }
+
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-weight: 600;
+            border-left: 4px solid var(--danger);
+        }
+
+        .remove-skill {
+            margin-left: 0.75rem;
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: bold;
+            float: right;
+            transition: color 0.3s;
+        }
+
+        .remove-skill:hover {
+            color: #ff0000;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text">InterviewAce</span>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">{{ user_id[0:2] | upper }}</div>
+                <div class="user-details">
+                    <h3 id="user-name">User: {{ user_id }}</h3>
+                    <p id="user-status">Loading...</p>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('both', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('analysis', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Analysis</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('four', user_id=user_id) }}" class="nav-link active">
+                        <i class="fas fa-file-upload"></i>
+                        <span>Resume Upload</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('before', user_id=user_id) }}" class="nav-link" id="face-verification-link">
+                        <i class="fas fa-camera"></i>
+                        <span>Face Verification</span>
+                        <span id="face-verification-status" style="margin-left: auto; font-size: 0.8rem;"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('previous_attempts', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>Previous Attempts</span>
+                        <span id="attempts-count" style="margin-left: auto; font-size: 0.8rem;"></span>
+                    </a>
+                </li>
+            </ul>
+            
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <div class="welcome-text">
+                    <h1>Resume Analysis, <span id="welcome-name">{{ user_id }}</span>!</h1>
+                    <p>Upload your resume and analyze your skills</p>
+                </div>
+                <a href="{{ url_for('both', user_id=user_id) }}" class="button" id="backButton">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
+            </div>
+
+            <div id="uploadSection" style="display: none;">
+                <div class="content-box">
+                    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                        <h2>Upload Resume</h2>
+                        <div class="file-input">
+                            <label for="file-upload">
+                                <i class="fas fa-file-upload"></i>
+                                Choose file
+                            </label>
+                            <input id="file-upload" type="file" name="file" accept=".pdf,.docx" onchange="updateFileName(this)">
+                            <p id="file-name"></p>
+                        </div>
+                        <h2>Job Description</h2>
+                        <div class="job-description">
+                            <textarea id="job-description" name="job_description" placeholder="Enter the job description here..." oninput="autoResize(this)">{{ job_description }}</textarea>
+                        </div>
+                        <div class="form-actions">
+                            <input type="submit" value="Upload and Analyze" class="button" id="submitBtn">
+                            <button type="button" class="button" id="previousAttemptsBtn" onclick="showPreviousAttempts()">
+                                <i class="fas fa-history"></i>
+                                Previous Attempts
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="faceCaptureSection" style="display: none;">
+                <div class="content-box">
+                    <h2>Face Capture Required</h2>
+                    <p>You need to complete the face capture process to continue.</p>
+                    <div class="form-actions">
+                        <a href="{{ url_for('before', user_id=user_id) }}" class="button">
+                            <i class="fas fa-camera"></i>
+                            Start Face Capture
+                        </a>
+                        <button onclick="cancelInterview()" class="button" style="background-color: var(--danger);">
+                            <i class="fas fa-times"></i>
+                            Cancel Interview
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {% if technical_skills %}
+                <div class="content-box">
+                    <h2>Extracted Technical Skills</h2>
+                    <ul class="analysis-list">
+                        {% for skill in technical_skills %}
+                            <li>
+                                {{ skill }}
+                             <span class="remove-skill" onclick="removeSkill(this, '{{ skill }}')">&times;</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if questions_generated %}
+                <p class="success">Interview questions have been generated and saved!</p>
+                <a href="{{ url_for('five', user_id=user_id) }}" class="button" id="startInterviewBtn">
+                    <i class="fas fa-play"></i>
+                    Start Interview
+                </a>
+            {% endif %}
+
+            {% if error_message %}
+                <div class="error-message">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="loading-spinner"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentAttempt = 0;
+        let totalAttempts = 0;
+
+        // Push a dummy state so back button doesn't go back
+        window.history.pushState(null, null, window.location.href);
+
+        // When back button is pressed
+        window.onpopstate = function() {
+            // Stay on the same page
+            window.history.go(1);
+        };
+
+        function showPreviousAttempts() {
+            const userId = '{{ user_id }}';
+            window.location.href = `/previous_attempts/${userId}`;
+        }
+
+        function updateFileName(input) {
+            const fileName = input.files[0].name;
+            document.getElementById('file-name').textContent = `File uploaded: ${fileName}`;
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function cancelInterview() {
+            alert("You can't continue the interview without completing face capture.");
+        }
+
+        function removeSkill(element, skillName) {
+            // Remove from DOM
+            element.parentElement.remove();
+
+            // (Optional) send update to backend to remove skill from session/database
+            fetch(`/remove_skill/{{ user_id }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ skill: skillName })
+            }).then(res => res.json())
+              .then(data => console.log(data.message))
+              .catch(err => console.error(err));
+        }
+
+        window.onload = function() {
+            const textarea = document.getElementById('job-description');
+            if (textarea) autoResize(textarea);
+
+            const form = document.getElementById('uploadForm');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            // Check if face capture is completed
+            fetch('/check_face_capture/{{ user_id }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.completed) {
+                        document.getElementById('uploadSection').style.display = 'block';
+                    } else {
+                        document.getElementById('faceCaptureSection').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while checking face capture status.');
+                });
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    loadingOverlay.style.display = 'flex';
+                    
+                    const formData = new FormData(form);
+                    
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        loadingOverlay.style.display = 'none';
+                        document.body.innerHTML = html;
+                        const newTextarea = document.getElementById('job-description');
+                        if (newTextarea) autoResize(newTextarea);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        loadingOverlay.style.display = 'none';
+                        alert('An error occurred. Please try again.');
+                    });
+                });
+            }
+
+            // Update user status
+            document.getElementById('user-status').textContent = 'Resume Analysis';
+            
+            // Check face verification status
+            fetch('/check_face_verification/{{ user_id }}')
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById('face-verification-status');
+                    if (data.completed) {
+                        statusElement.textContent = '✓';
+                        statusElement.style.color = '#10b981';
+                    } else {
+                        statusElement.textContent = '!';
+                        statusElement.style.color = '#ef4444';
+                    }
+                });
+                
+            // Get attempts count
+            fetch('/get_attempts_count/{{ user_id }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('attempts-count').textContent = data.count;
+                });
+        };
+
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.go(1);
+        };
+    </script>
+</body>
+</html>

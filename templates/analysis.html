@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewAce - Voice Interview Performance Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #1a3a5f;
+            --primary-dark: #1a3a5f;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --light: #f9fafb;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light-gray: #e5e7eb;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg,#224062 0%, #a478ca 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles (same as both.html) */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgb(255, 255, 255);
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(79, 70, 229, 0.05);
+            border-radius: 12px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+
+        .user-details h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .nav-menu {
+    list-style: none;
+    margin-bottom: 1rem; /* just a small spacing after menu */
+}
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .logout-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-text p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(123, 88, 222, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .chart-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background:  #ffffff;   
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text">InterviewAce</span>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">{{ user_id[0:2] | upper }}</div>
+                <div class="user-details">
+                    <h3 id="user-name">User: {{ user_id }}</h3>
+                    <p id="user-status">Loading...</p>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('both', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('analysis', user_id=user_id) }}" class="nav-link active">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Analysis</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('four', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-file-upload"></i>
+                        <span>Resume Upload</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('before', user_id=user_id) }}" class="nav-link" id="face-verification-link">
+                        <i class="fas fa-camera"></i>
+                        <span>Face Verification</span>
+                        <span id="face-verification-status" style="margin-left: auto; font-size: 0.8rem;"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('previous_attempts', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>Previous Attempts</span>
+                        <span id="attempts-count" style="margin-left: auto; font-size: 0.8rem;"></span>
+                    </a>
+                </li>
+            </ul>
+            
+            <a href="/logout" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i>
+    <span>Logout</span>
+</a>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <div class="welcome-text">
+                    <h1>Voice Intreview Performance Analysis, <span id="welcome-name">{{ user_id }}</span>!</h1>
+                    <p>Track your interview performance and progress over time</p>
+                </div>
+            </div>
+            
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-attempts">0</div>
+                    <div class="stat-label">Total Attempts</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avg-score">0%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="best-score">0%</div>
+                    <div class="stat-label">Best Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="improvement">0%</div>
+                    <div class="stat-label">Improvement</div>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Score Progress Over Time</h3>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="scoreProgressChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Skill Distribution</h3>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Question Type Performance</h3>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="questionTypeChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Monthly Performance</h3>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="monthlyPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Global variables to store chart data
+        let scoreProgressChart, skillsChart, questionTypeChart, monthlyPerformanceChart;
+        
+        // Function to fetch analysis data from the server
+        async function fetchAnalysisData() {
+            try {
+                const response = await fetch(`/get_analysis_data/{{ user_id }}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateAnalysisDashboard(data);
+                } else {
+                    console.error('Failed to fetch analysis data');
+                }
+            } catch (error) {
+                console.error('Error fetching analysis data:', error);
+            }
+        }
+        
+        // Function to update the analysis dashboard with data
+        function updateAnalysisDashboard(data) {
+            // Update stats
+            document.getElementById('total-attempts').textContent = data.total_attempts || 0;
+            document.getElementById('avg-score').textContent = `${data.average_score || 0}%`;
+            document.getElementById('best-score').textContent = `${data.best_score || 0}%`;
+            document.getElementById('improvement').textContent = `${data.improvement || 0}%`;
+            
+            // Update user info
+            document.getElementById('user-name').textContent = data.name || `User: {{ user_id }}`;
+            document.getElementById('user-status').textContent = 'Active User';
+            document.getElementById('welcome-name').textContent = data.name || '{{ user_id }}';
+            
+            // Create charts
+            createCharts(data);
+        }
+        
+        // Function to create all charts
+        function createCharts(data) {
+            // Score Progress Chart
+            const scoreProgressCtx = document.getElementById('scoreProgressChart').getContext('2d');
+            if (scoreProgressChart) scoreProgressChart.destroy();
+            
+            scoreProgressChart = new Chart(scoreProgressCtx, {
+                type: 'line',
+                data: {
+                    labels: data.attempt_dates || [],
+                    datasets: [{
+                        label: 'Score Progress',
+                        data: data.scores || [],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Skills Chart
+            const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+            if (skillsChart) skillsChart.destroy();
+            
+            skillsChart = new Chart(skillsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.skills_labels || ['No data'],
+                    datasets: [{
+                        data: data.skills_data || [100],
+                        backgroundColor: [
+                            '#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+            
+            // Question Type Chart
+            const questionTypeCtx = document.getElementById('questionTypeChart').getContext('2d');
+            if (questionTypeChart) questionTypeChart.destroy();
+            
+            questionTypeChart = new Chart(questionTypeCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.question_types ? data.question_types.map(q => q.type) : ['Technical', 'Practical', 'Aptitude'],
+                    datasets: [{
+                        label: 'Average Score',
+                        data: data.question_types ? data.question_types.map(q => q.score) : [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Performance Chart
+            const monthlyPerformanceCtx = document.getElementById('monthlyPerformanceChart').getContext('2d');
+            if (monthlyPerformanceChart) monthlyPerformanceChart.destroy();
+            
+            // Create sample data for monthly performance if none exists
+            const months = data.months || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            const monthlyAttempts = data.monthly_attempts || [3, 5, 2, 4, 6, 3];
+            const monthlyScores = data.monthly_scores || [75, 82, 68, 88, 79, 85];
+            
+            monthlyPerformanceChart = new Chart(monthlyPerformanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Attempts',
+                            data: monthlyAttempts,
+                            backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Avg Score',
+                            data: monthlyScores,
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            type: 'line',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Attempts',
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Score %',
+                                color: 'white'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+       /* function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = "{{ url_for('login') }}";
+            }
+        }*/
+         // Push a dummy state so back button doesn't go back
+    window.history.pushState(null, null, window.location.href);
+
+    // When back button is pressed
+    window.onpopstate = function() {
+        // Stay on the same page
+        window.history.go(1);
+    };
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchAnalysisData();
+            
+            // Set up periodic data refresh (every 30 seconds)
+            setInterval(() => {
+                fetchAnalysisData();
+            }, 30000);
+        });
+        history.pushState(null, null, location.href);
+window.onpopstate = function() {
+    history.go(1);
+};
+    </script>
+</body>
+</html>

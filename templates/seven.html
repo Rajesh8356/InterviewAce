@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            animation: fadeInAndSlide 1s ease-out;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            animation: fadeInAndExpand 0.8s ease-out;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e6f7ff;
+            transition: background-color 0.3s ease;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+        .popup h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .popup p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #777;
+        }
+        @keyframes fadeInAndSlide {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInAndExpand {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            70% { transform: scale(1.1) translateY(-5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        #email-status {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            animation: fadeInAndSlide 1s ease-out 0.5s both;
+        }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #loading-message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        #content {
+            display: none;
+        }
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <div id="loading-message">Generating results and PDF...</div>
+    </div>
+
+    <div id="content">
+        <button id="logout-btn" class="logout-btn" onclick="logout()">Logout</button>
+        <h1>Interview Results</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Question Number</th>
+                    <th>Question</th>
+                    <th>Model Answer</th>
+                    <th>Your Answer</th>
+                    <th>Similarity Score</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody id="results-table">
+                <!-- Results will be populated by JavaScript -->
+            </tbody>
+        </table>
+
+        <div id="email-status"></div>
+
+        <div id="average-popup" class="popup">
+            <span class="close-btn" onclick="closePopup()">&times;</span>
+            <h2>Your Average Score</h2>
+            <p id="average-score"></p>
+        </div>
+    </div>
+
+    <script>
+        async function loadResults() {
+            try {
+                const response = await fetch(`/get_results/{{ user_id }}`);
+                const data = await response.json();
+                
+                // Hide loading screen and show content
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                const tableBody = document.getElementById('results-table');
+                let totalScore = 0;
+                
+                data.results.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${row.question}</td>
+                        <td>${row.model_answer}</td>
+                        <td>${row.user_answer}</td>
+                        <td>${row.similarity_score}</td>
+                        <td>${row.remark}</td>
+                    `;
+                    tr.style.animation = `popIn 0.5s ease-out ${index * 0.1}s both`;
+                    tableBody.appendChild(tr);
+
+                    // Add to total score
+                    totalScore += parseFloat(row.similarity_score);
+                });
+
+                // Calculate average
+                const averageScore = (totalScore / data.results.length).toFixed(2);
+
+                // Display average in popup
+                document.getElementById('average-score').textContent = `${averageScore}%`;
+                showPopup();
+
+                // Add shimmer effect to similarity scores
+                const scoreElements = document.querySelectorAll('td:nth-child(5)');
+                scoreElements.forEach(el => {
+                    el.style.background = 'linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%)';
+                    el.style.backgroundSize = '1000px 100%';
+                    el.style.animation = 'shimmer 2s infinite linear';
+                });
+
+                // Display email status message
+                const emailStatus = document.getElementById('email-status');
+                emailStatus.textContent = data.message;
+                emailStatus.style.backgroundColor = data.message.includes("sent") ? "#d4edda" : "#f8d7da";
+                emailStatus.style.color = data.message.includes("sent") ? "#155724" : "#721c24";
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('loading-message').textContent = 'Error loading results. Please try again.';
+            }
+        }
+
+        function showPopup() {
+            const popup = document.getElementById('average-popup');
+            popup.style.opacity = '1';
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('average-popup');
+            popup.style.opacity = '0';
+        }
+
+        function logout() {
+            // Show loading screen with logout message
+            document.getElementById('loading-screen').style.display = 'flex';
+            document.getElementById('loading-message').textContent = 'Logging out...';
+            
+            // Simulate logout process
+            setTimeout(() => {
+                // Redirect to login page after 5 seconds
+                window.location.href = '/login';  // Update this URL to match your login page route
+            }, 5000);
+        }
+
+        window.onload = loadResults;
+    </script>
+</body>
+</html>

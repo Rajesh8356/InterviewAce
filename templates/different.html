@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Language and Difficulty</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            width: 95%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 50;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+            box-sizing: border-box;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--foreground);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-dark);
+            color: rgb(0, 0, 0);
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(189, 68, 68, 0.1);
+            margin-top: 5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgb(228, 228, 228);
+            background-color: #0d2e50;
+        }
+
+        h1 {
+            color: #4a4a4a;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.5em;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .option-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .option-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .start-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .start-btn:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        h2 {
+            margin-top: 30px;
+            color: #4a4a4a;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="logo">
+                <span class="logo-icon">🎯</span>
+                <span>InterviewAce</span>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="{{ url_for('both', user_id=user_id) }}" class="button" id="backButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                    </svg>
+                    Back
+                </a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Choose Your Coding Challenge</h1>
+        
+        <h2>Select a Programming Language</h2>
+        <div class="options-grid">
+            <div class="option-box">
+                <h3>Python</h3>
+                <button class="start-btn" onclick="startChallenge('python')">Start</button>
+            </div>
+            <div class="option-box">
+                <h3>C++</h3>
+                <button class="start-btn" onclick="startChallenge('cpp')">Start</button>
+            </div>
+            <div class="option-box">
+                <h3>Java</h3>
+                <button class="start-btn" onclick="startChallenge('java')">Start</button>
+            </div>
+            <div class="option-box">
+                <h3>HTML</h3>
+                <button class="start-btn" onclick="startChallenge('html')">Start</button>
+            </div>
+        </div>
+
+        <h2>Select Difficulty Level</h2>
+        <div class="options-grid">
+            <div class="option-box">
+                <h3>Beginner</h3>
+                <button class="start-btn" onclick="startChallenge('beginner')">Start</button>
+            </div>
+            <div class="option-box">
+                <h3>Intermediate</h3>
+                <button class="start-btn" onclick="startChallenge('intermediate')">Start</button>
+            </div>
+            <div class="option-box">
+                <h3>Hard</h3>
+                <button class="start-btn" onclick="startChallenge('hard')">Start</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startChallenge(option) {
+            // Store the selected option in localStorage
+            localStorage.setItem('selectedOption', option);
+            // Redirect to code.html
+            window.location.href = '/code/{{ user_id }}';
+        }
+    </script>
+</body>
+</html>

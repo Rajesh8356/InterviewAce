@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Back | Login</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a3a5f;
+            --primary-dark: #1a3a5f;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --light: #f9fafb;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light-gray: #e5e7eb;
+            
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-hover: #f8fafc;
+            
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            
+            --border: #e5e7eb;
+            --border-light: #f3f4f6;
+            
+            --gradient-primary: linear-gradient(135deg, #1a3a5f 0%, #10b981 50%, #f59e0b 100%);
+            --gradient-light: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
+            --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            
+            --shadow-primary: 0 10px 40px rgba(26, 58, 95, 0.15);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 48px rgba(26, 58, 95, 0.2);
+            --shadow-glow: 0 0 20px rgba(26, 58, 95, 0.1);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-primary);
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--bg-primary);
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(26, 58, 95, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        .container {
+            background: var(--gradient-card);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            width: 90%;
+            max-width: 400px;
+            padding: 3rem;
+            position: relative;
+            z-index: 1;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
+            outline: none;
+        }
+
+        label {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--bg-card);
+            padding: 0 5px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            font-size: 0.9rem;
+        }
+
+        input:focus + label, input:not(:placeholder-shown) + label {
+            top: 0;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .forgot-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .forgot-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-links a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .floating-icon {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+            color: var(--primary);
+        }
+
+        .icon-1 {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .icon-2 {
+            top: 70%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .icon-3 {
+            bottom: 10%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        /* New styles for human verification */
+        .verification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 250, 252, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .verification-box {
+            background: var(--gradient-card);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .verification-box h2 {
+            margin-bottom: 1rem;
+        }
+
+        .verification-box p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .verification-button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+            box-shadow: var(--shadow-primary);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .verification-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .verification-button::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: rgba(255, 255, 255, 0.2);
+            transition: width 5s linear;
+        }
+
+        .verification-button.holding::after {
+            width: 100%;
+        }
+
+        @keyframes success-animation {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-message {
+            display: none;
+            color: var(--secondary);
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            animation: success-animation 0.5s ease-out;
+            font-weight: 600;
+        }
+
+        /* Modal styles for forgot ID/password */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 250, 252, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal {
+            background: var(--gradient-card);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--primary);
+        }
+
+        .modal-step {
+            display: none;
+        }
+
+        .modal-step.active {
+            display: block;
+        }
+
+        /* Particles container */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+    
+    <div id="particles-js"></div>
+    
+    <div class="verification-overlay">
+        <div class="verification-box">
+            <h2>Human Verification</h2>
+            <p>Please hold the button for 5 seconds to verify you're human.</p>
+            <button class="verification-button" id="verificationButton">Hold to Verify</button>
+            <p class="success-message" id="successMessage">Verification successful! Redirecting...</p>
+        </div>
+    </div>
+
+    <!-- Forgot User ID Modal -->
+    <div class="modal-overlay" id="forgotIdModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('forgotIdModal')">&times;</button>
+            <h3>Forgot User ID</h3>
+            <div class="modal-step active" id="forgotIdStep1">
+                <p>Enter your registered email address to receive your User ID.</p>
+                <div class="input-group">
+                    <input type="email" id="forgotIdEmail" placeholder=" " required>
+                    <label for="forgotIdEmail">Email Address</label>
+                </div>
+                <button class="btn btn-primary" onclick="sendUserId()">Send User ID</button>
+            </div>
+            <div class="modal-step" id="forgotIdStep2">
+                <p style="color: var(--secondary);">Your User ID has been sent to your email address.</p>
+                <button class="btn btn-primary" onclick="closeModal('forgotIdModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('forgotPasswordModal')">&times;</button>
+            <h3>Forgot Password</h3>
+            
+            <div class="modal-step active" id="forgotPasswordStep1">
+                <p>Enter your User ID to reset your password.</p>
+                <div class="input-group">
+                    <input type="text" id="forgotPasswordUserId" placeholder=" " required>
+                    <label for="forgotPasswordUserId">User ID</label>
+                </div>
+                <button class="btn btn-primary" onclick="sendPasswordResetCode()">Send Verification Code</button>
+            </div>
+            
+            <div class="modal-step" id="forgotPasswordStep2">
+                <p>Enter the verification code sent to your email.</p>
+                <div class="input-group">
+                    <input type="text" id="resetCode" placeholder=" " maxlength="6" required>
+                    <label for="resetCode">Verification Code</label>
+                </div>
+                <button class="btn btn-primary" onclick="verifyResetCode()">Verify Code</button>
+            </div>
+            
+            <div class="modal-step" id="forgotPasswordStep3">
+                <p>Create a new password for your account.</p>
+                <div class="input-group">
+                    <input type="password" id="newPassword" placeholder=" " required>
+                    <label for="newPassword">New Password</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="confirmPassword" placeholder=" " required>
+                    <label for="confirmPassword">Confirm Password</label>
+                </div>
+                <button class="btn btn-primary" onclick="resetPassword()">Reset Password</button>
+            </div>
+            
+            <div class="modal-step" id="forgotPasswordStep4">
+                <p style="color: var(--secondary);">Your password has been successfully reset.</p>
+                <button class="btn btn-primary" onclick="closeModal('forgotPasswordModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <svg class="floating-icon icon-1" width="50" height="50" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+        </svg>
+        <svg class="floating-icon icon-2" width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+        </svg>
+        <svg class="floating-icon icon-3" width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+        <h2>Login</h2>
+        <form action="/login" method="post">
+            <div class="input-group">
+                <input type="text" id="user_id" name="user_id" required placeholder=" ">
+                <label for="user_id">User ID</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" name="password" required placeholder=" ">
+                <label for="password">Password</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        
+        <div class="forgot-links">
+            <a href="#" onclick="openModal('forgotIdModal')">Forgot User ID?</a>
+            <a href="#" onclick="openModal('forgotPasswordModal')">Forgot Password?</a>
+        </div>
+        
+        <p class="register-link">Don't have an account? <a href="/register">Register here</a></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#1a3a5f" },
+                shape: { type: "circle" },
+                opacity: { value: 0.3, random: false },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: "#1a3a5f", opacity: 0.2, width: 1 },
+                move: { enable: true, speed: 6, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+                modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+            },
+            retina_detect: true
+        });
+
+        // Human verification script
+        const verificationOverlay = document.querySelector('.verification-overlay');
+        const verificationButton = document.getElementById('verificationButton');
+        const successMessage = document.getElementById('successMessage');
+        let holdStartTime;
+        let holdTimer;
+
+        verificationButton.addEventListener('mousedown', startHolding);
+        verificationButton.addEventListener('mouseup', stopHolding);
+        verificationButton.addEventListener('mouseleave', stopHolding);
+
+        verificationButton.addEventListener('touchstart', startHolding);
+        verificationButton.addEventListener('touchend', stopHolding);
+
+        function startHolding(e) {
+            e.preventDefault();
+            holdStartTime = Date.now();
+            verificationButton.classList.add('holding');
+            holdTimer = setTimeout(() => {
+                verificationSuccessful();
+            }, 5000);
+        }
+
+        function stopHolding() {
+            clearTimeout(holdTimer);
+            verificationButton.classList.remove('holding');
+            if (Date.now() - holdStartTime < 5000) {
+                // Reset the button if held for less than 5 seconds
+                verificationButton.style.setProperty('--progress', '0%');
+            }
+        }
+
+        function verificationSuccessful() {
+            verificationButton.style.display = 'none';
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                verificationOverlay.style.display = 'none';
+            }, 2000);
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Reset modals to first step when closed
+            if (modalId === 'forgotIdModal') {
+                document.getElementById('forgotIdStep1').classList.add('active');
+                document.getElementById('forgotIdStep2').classList.remove('active');
+                document.getElementById('forgotIdEmail').value = '';
+            } else if (modalId === 'forgotPasswordModal') {
+                document.getElementById('forgotPasswordStep1').classList.add('active');
+                document.getElementById('forgotPasswordStep2').classList.remove('active');
+                document.getElementById('forgotPasswordStep3').classList.remove('active');
+                document.getElementById('forgotPasswordStep4').classList.remove('active');
+                document.getElementById('forgotPasswordUserId').value = '';
+                document.getElementById('resetCode').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            }
+        }
+
+        // Forgot User ID functions
+        function sendUserId() {
+            const email = document.getElementById('forgotIdEmail').value.trim();
+            
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+            
+            fetch('/forgot-userid', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('forgotIdStep1').classList.remove('active');
+                    document.getElementById('forgotIdStep2').classList.add('active');
+                } else {
+                    alert(data.error || 'Failed to send User ID');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send User ID. Please try again.');
+            });
+        }
+
+        // Forgot Password functions
+        let resetUserId = '';
+        let resetCode = '';
+
+        function sendPasswordResetCode() {
+            const userId = document.getElementById('forgotPasswordUserId').value.trim();
+            
+            if (!userId) {
+                alert('Please enter your User ID');
+                return;
+            }
+            
+            fetch('/send-password-reset-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resetUserId = userId;
+                    resetCode = data.code; // Store the code for verification
+                    document.getElementById('forgotPasswordStep1').classList.remove('active');
+                    document.getElementById('forgotPasswordStep2').classList.add('active');
+                } else {
+                    alert(data.error || 'Failed to send verification code');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send verification code. Please try again.');
+            });
+        }
+
+        function verifyResetCode() {
+            const enteredCode = document.getElementById('resetCode').value.trim();
+            
+            if (!enteredCode) {
+                alert('Please enter the verification code');
+                return;
+            }
+            
+            if (enteredCode === resetCode) {
+                document.getElementById('forgotPasswordStep2').classList.remove('active');
+                document.getElementById('forgotPasswordStep3').classList.add('active');
+            } else {
+                alert('Invalid verification code');
+            }
+        }
+
+        function resetPassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!newPassword || !confirmPassword) {
+                alert('Please enter and confirm your new password');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            fetch('/reset-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    user_id: resetUserId, 
+                    new_password: newPassword 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('forgotPasswordStep3').classList.remove('active');
+                    document.getElementById('forgotPasswordStep4').classList.add('active');
+                } else {
+                    alert(data.error || 'Failed to reset password');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to reset password. Please try again.');
+            });
+        }
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeModal(overlay.id);
+                }
+            });
+        });
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.go(1);
+        };
+    </script>
+</body>
+</html>

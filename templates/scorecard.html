@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Performance Score Card</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #64748b;
+      --success: #059669;
+      --light-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--text-dark);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      padding: 50px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+    }
+    
+    .logo {
+      margin-bottom: 35px;
+    }
+    
+    .logo img {
+      max-width: 200px;
+      height: auto;
+    }
+    
+    h1 {
+      color: var(--text-dark);
+      font-size: 32px; /* Increased from 28px */
+      font-weight: 600;
+      margin-bottom: 30px;
+      letter-spacing: -0.5px;
+    }
+    
+    .score-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 30px 0;
+    }
+    
+    .score-circle {
+      width: 180px; /* Increased from 160px */
+      height: 180px; /* Increased from 160px */
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--success) 0% calc(var(--score-percent) * 1%), 
+        #e2e8f0 calc(var(--score-percent) * 1%) 100%
+      );
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin: 0 auto;
+    }
+    
+    .score-inner {
+      width: 145px; /* Increased from 130px */
+      height: 145px; /* Increased from 130px */
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .score-value {
+      font-size: 38px; /* Increased from 32px */
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1;
+    }
+    
+    .score-total {
+      font-size: 16px; /* Increased from 14px */
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    .detailed-scores {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 25px 0;
+      border: 1px solid var(--border);
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 17px; /* Increased from 15px */
+    }
+
+    .score-label {
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
+    .score-value-text {
+      color: var(--success);
+      font-weight: 600;
+    }
+    
+    .name {
+      font-size: 20px; /* Increased from 18px */
+      color: var(--text-dark);
+      margin: 25px 0 15px;
+    }
+    
+    .name strong {
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .performance-text {
+      font-size: 18px; /* Increased from 16px */
+      color: var(--text-light);
+      line-height: 1.6;
+      margin: 20px 0 35px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .performance-text strong {
+      color: var(--success);
+      font-weight: 600;
+    }
+    
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-size: 17px; /* Increased from 15px */
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: var(--secondary);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    
+    .footer {
+      margin-top: 40px;
+      font-size: 15px; /* Increased from 13px */
+      color: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="scorecard">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Company Logo">
+    </div>
+    <h1>Performance Evaluation Scorecard</h1>
+    
+    <div class="score-container">
+      <div class="score-circle" style="--score-percent: {{ overall_percentage }}">
+  <div class="score-inner">
+      <div class="score-value">{{ overall_percentage }}%</div>
+      <div class="score-total">Overall Percentage</div>
+  </div>
+</div>
+
+    </div>
+
+    <!-- Detailed Score Breakdown
+    <div class="detailed-scores">
+      <div class="score-row">
+        <span class="score-label">Raw Score:</span>
+        <span class="score-value-text">{{ total_score }} / {{ max_possible_score }}</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Percentage:</span>
+        <span class="score-value-text">{{ percentage_score }}%</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Questions Answered:</span>
+        <span class="score-value-text">{{ questions_answered }} / {{ total_questions }}</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Average Score per Question:</span>
+        <span class="score-value-text">{{ average_score_per_question }}/10</span>
+      </div>
+    </div> -->
+    
+    <p class="name"><strong>Candidate:</strong> {{ name }}</p>
+    
+    <p class="performance-text">
+      Congratulations <strong>{{ name }}</strong> on completing the assessment.<br>
+      Your performance has been evaluated
+      achieving an overall percentage of <strong>{{ overall_percentage }}%</strong>.
+    </p>
+
+    <div class="btn-container no-download">
+      <button onclick="downloadCardAsImage()" class="btn btn-primary">
+        ⬇ Download Scorecard
+      </button>
+      <a href="{{ url_for('both', user_id=user_id) }}" class="btn btn-secondary">
+        ← Back to Dashboard
+      </a>
+    </div>
+    
+    <div class="footer no-download">
+      © 2024 Evaluation System. All rights reserved.
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    function downloadCardAsImage() {
+      const card = document.getElementById('scorecard');
+
+      // Temporarily hide elements with .no-download
+      const hiddenEls = card.querySelectorAll('.no-download');
+      hiddenEls.forEach(el => el.style.display = 'none');
+
+      html2canvas(card, {
+        scale: 2,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `scorecard_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        // Restore hidden elements
+        hiddenEls.forEach(el => el.style.display = '');
+      });
+    }
+    // Add this to voice_results.html or in a script tag
+function goToScorecard() {
+    // Get the percentage from the page
+    const percentage = parseFloat(document.querySelector('.score').textContent.match(/(\d+\.?\d*)%/)[1]);
+    
+    // Save it to session
+    fetch('/save_voice_percentage', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({percentage: percentage})
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Navigate to scorecard
+        window.location.href = "{{ url_for('scorecard', user_id=session.get('user_id', '')) }}";
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Still navigate even if there's an error
+        window.location.href = "{{ url_for('scorecard', user_id=session.get('user_id', '')) }}";
+    });
+}
+
+// Update the scorecard link to use this function
+document.querySelector('a[href*="scorecard"]').addEventListener('click', function(e) {
+    e.preventDefault();
+    goToScorecard();
+});
+  </script>
+</body>
+</html>

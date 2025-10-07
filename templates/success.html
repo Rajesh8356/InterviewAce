@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px;
+            background-color: #f2f2f2;
+        }
+        .box {
+            background-color: white;
+            display: inline-block;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .user-id {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: green;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>🎉 Registration Successful!</h2>
+        <p>Your auto-generated User ID is:</p>
+        <div class="user-id">{{ user_id }}</div>
+        <a href="{{ url_for('login') }}">Go to Login</a>
+    </div>
+</body>
+</html>

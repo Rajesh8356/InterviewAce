@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Voice Interview - Fixed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(90deg, #4f46e5, #6d28d9);
+      color: white;
+      padding: 18px 40px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .header-subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .container {
+      display: flex;
+      padding: 30px;
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .chat-section, .video-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+    }
+    .chat-section {
+      flex: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 600px;
+    }
+    .video-section {
+      flex: 1;
+      position: sticky;
+      top: 30px;
+      align-self: flex-start;
+      max-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-section h3 {
+      margin-top: 0;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chat-section h3 i {
+      color: #4f46e5;
+    }
+    .transcript {
+      flex-grow: 1;
+      overflow-y: auto;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+      padding: 15px 0;
+      margin: 15px 0;
+    }
+    .entry {
+      margin-bottom: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .entry .bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      display: inline-block;
+      max-width: 80%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      line-height: 1.5;
+    }
+    .entry.bot .bubble {
+      background: #f0f4ff;
+      color: #1e293b;
+      border-left: 4px solid #4f46e5;
+    }
+    .entry.user .bubble {
+      background: #f0fdf4;
+      color: #166534;
+      border-right: 4px solid #10b981;
+      margin-left: auto;
+      display: block;
+    }
+    .entry b {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    .video-section video {
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      background: #f9fafb;
+      aspect-ratio: 16/9;
+    }
+    .video-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .video-header h3 {
+      margin: 0;
+      font-weight: 600;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .video-header h3 i {
+      color: #ef4444;
+    }
+    #endBtn {
+      align-self: flex-start;
+      margin-bottom: 15px;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #endBtn:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+    }
+    .timer-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .timer {
+      font-size: 18px;
+      font-weight: 600;
+      color: #4f46e5;
+    }
+    .timer-label {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .timer-section {
+      text-align: center;
+      padding: 0 10px;
+    }
+    .verification-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .verified {
+      background-color: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .not-verified {
+      background-color: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .control-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .control-btn:hover {
+      background: #f3f4f6;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .listening .status-indicator {
+      background-color: #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    .speaking .status-indicator {
+      background-color: #3b82f6;
+    }
+    .inactive .status-indicator {
+      background-color: #6b7280;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .typing-indicator {
+      display: inline-flex;
+      align-items: center;
+      color: #6b7280;
+      font-style: italic;
+    }
+    .typing-dots {
+      display: inline-flex;
+      margin-left: 5px;
+    }
+    .typing-dots span {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: #6b7280;
+      margin: 0 1px;
+      animation: typing 1.4s infinite;
+    }
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes typing {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+      }
+      .video-section {
+        position: relative;
+        top: 0;
+        max-height: none;
+      }
+    }
+    .scroll-top-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #4f46e5;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+    .scroll-top-btn.visible {
+      opacity: 1;
+    }
+    .listening-indicator {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(79, 70, 229, 0.9);
+      color: white;
+      padding: 15px;
+      border-radius: 50px;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .pulse-ring {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .mic-icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+      z-index: 2;
+    }
+    .debug-panel {
+      background: #f1f5f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .debug-panel {
+  display: none; /* hide on front-end */
+}
+
+  </style>
+</head>
+<body>
+  <header>AI Voice-Based Interview - Fixed Speech Recognition</header>
+  <div class="container">
+    <div class="chat-section">
+      <h3>Transcript</h3>
+      <div class="timer-container">
+        <div class="timer-section">
+          <div class="timer-label">Interview Time Remaining</div>
+          <div class="timer" id="countdownTimer">5:00</div>
+        </div>
+        <div class="timer-section">
+          <div class="timer-label">Current Round</div>
+          <div class="timer" id="currentRound">Technical</div>
+        </div>
+      </div>
+      <button id="endBtn">End Interview</button>
+      <div class="transcript" id="transcript"></div>
+     <div class="debug-panel" id="debugPanel">
+        <strong>Debug Information:</strong><br>
+        Status: Initializing...
+      </div>
+    </div>
+    <div class="video-section">
+      <video id="video" autoplay muted></video>
+      <div id="verificationStatus" class="verification-status verified">Face Verified ✓</div>
+    </div>
+  </div>
+  
+  <div class="listening-indicator" id="listeningIndicator" style="display: none;">
+    <div class="pulse-ring"></div>
+    <div class="mic-icon">🎤</div>
+    <span>Listening...</span>
+  </div>
+
+  <script>
+    // Interview state variables
+    const session_id = 'user_' + Math.floor(Math.random() * 1000000);
+    let currentQuestion = "";
+    let totalTime = 5 * 60; // 5 minutes in seconds
+    let countdownInterval;
+    let isHrRound = false;
+    let isSpeaking = false;
+    let recognitionActive = false;
+    let currentQuestionId = 0;
+    let answerTimeout;
+    let faceVerificationInterval;
+    let verificationFailedCount = 0;
+    let recognition;
+    let SpeechRecognition;
+     let isInterviewEnding = false;
+     let mediaRecorder;
+let audioChunks = [];
+
+const startRecording = async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'response.wav');
+            const response = await fetch('/process_audio/' + userId, {  // userId from template
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            console.log('Transcribed text:', result.text);  // Handle response
+            audioChunks = [];  // Reset
+        };
+        mediaRecorder.start();
+        // Update UI to show recording
+    } catch (err) {
+        console.error('Microphone access denied or error:', err);
+    }
+};
+
+const stopRecording = () => {
+    if (mediaRecorder) mediaRecorder.stop();
+};
+
+    // DOM elements
+    const video = document.getElementById("video");
+    const endBtn = document.getElementById("endBtn");
+    const transcriptEl = document.getElementById("transcript");
+    const verificationStatus = document.getElementById("verificationStatus");
+    const debugPanel = document.getElementById("debugPanel");
+    const listeningIndicator = document.getElementById("listeningIndicator");
+
+    // Initialize everything when page loads
+    window.addEventListener('load', () => {
+      initializeWebcam();
+      startCountdown();
+      initializeSpeechRecognition();
+      fetchQuestion(); // Start with first question
+      startFaceVerification(); 
+    });
+
+    // Add this to the voice_interview.html script section
+    window.addEventListener('beforeunload', function(e) {
+        // Only cleanup if the interview is in progress
+        if (totalTime > 0 && session_id) {
+            // Send a request to cleanup the session
+            fetch('/cleanup_interview_session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // We can't wait for the response in beforeunload, but we try anyway
+                keepalive: true
+            }).catch(err => console.log('Cleanup request failed:', err));
+        }
+    });
+
+    // Initialize speech recognition
+    function initializeSpeechRecognition() {
+      SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        debug("Speech recognition not supported in this browser");
+        alert("Speech recognition is not supported in your browser. Please use Chrome or Edge.");
+        return;
+      }
+      
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
+      
+      recognition.onstart = () => {
+        debug("Speech recognition started");
+        recognitionActive = true;
+        showListeningIndicator();
+      };
+      
+      recognition.onresult = (event) => {
+        clearTimeout(answerTimeout);
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        if (finalTranscript) {
+          debug("Final result: " + finalTranscript);
+          addEntry("You", finalTranscript);
+          processAnswer(finalTranscript);
+        } else if (interimTranscript) {
+          debug("Interim result: " + interimTranscript);
+          // You could show interim results in the UI if desired
+        }
+      };
+      
+      recognition.onerror = (event) => {
+        debug("Recognition error: " + event.error);
+        clearTimeout(answerTimeout);
+        
+        switch(event.error) {
+          case 'no-speech':
+            handleNoResponse();
+            break;
+          case 'audio-capture':
+            addEntry("Bot", "Microphone not found. Please check your microphone settings.");
+            speakText("Microphone not found. Please check your microphone settings.");
+            break;
+          case 'not-allowed':
+            addEntry("Bot", "Microphone access denied. Please allow microphone access to continue.");
+            speakText("Microphone access denied. Please allow microphone access to continue.");
+            break;
+          default:
+            debug("Recognition error: " + event.error);
+            addEntry("You", "(Technical difficulty)");
+            processAnswer("(Technical difficulty)");
+        }
+        
+        recognitionActive = false;
+        hideListeningIndicator();
+      };
+      
+      recognition.onend = () => {
+        debug("Recognition ended");
+        recognitionActive = false;
+        hideListeningIndicator();
+      };
+    }
+
+    // Webcam initialization
+    function initializeWebcam() {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(stream => { 
+          video.srcObject = stream; 
+          debug("Webcam initialized successfully");
+        })
+        .catch(err => {
+          console.error("Webcam error:", err);
+          debug("Webcam error: " + err.message);
+        });
+    }
+
+    // Timer functions
+    function startCountdown() {
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    function updateCountdown() {
+      const minutes = Math.floor(totalTime / 60);
+      const seconds = totalTime % 60;
+      document.getElementById('countdownTimer').textContent = 
+        `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      
+      // Switch to HR round in last minute
+      if (totalTime <= 60 && !isHrRound) {
+        isHrRound = true;
+        document.getElementById('currentRound').textContent = 'HR';
+      }
+      
+      totalTime--;
+      
+      // End interview when time reaches 0
+      if (totalTime <= 0) {
+        clearInterval(countdownInterval);
+        endInterview();
+      }
+    }
+
+    // Question handling
+    async function fetchQuestion() {
+      try {
+        const isHr = totalTime <= 60;
+        const res = await fetch('/start_interview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            session_id,
+            isHrRound: isHr
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        
+        currentQuestion = data.question;
+        isSpeaking = true;
+        await speakText(currentQuestion);
+        isSpeaking = false;
+        addEntry("Bot", currentQuestion);
+        
+        // Start listening for answer
+        if (!recognitionActive) {
+          startListening();
+        }
+      } catch (error) {
+        console.error("Error fetching question:", error);
+        debug("Error fetching question: " + error.message);
+        // Retry after delay if needed
+        setTimeout(fetchQuestion, 1000);
+      }
+    }
+
+    // Speech synthesis via ElevenLabs API
+    function speakText(text) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const res = await fetch("/speak", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json();
+            console.error("Error from /speak:", errorData);
+            // Fallback to browser speech synthesis
+            fallbackSpeechSynthesis(text).then(resolve).catch(resolve);
+            return;
+          }
+
+          // Create a blob from the response
+          const audioBlob = await res.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          audio.onended = resolve;
+          audio.onerror = () => {
+            console.error("Audio playback error");
+            resolve();
+          };
+          
+          audio.play();
+        } catch (err) {
+          console.error("Speak error:", err);
+          // Fallback to browser speech synthesis
+          fallbackSpeechSynthesis(text).then(resolve).catch(resolve);
+        }
+      });
+    }
+
+    // Fallback using browser's speech synthesis
+    function fallbackSpeechSynthesis(text) {
+      return new Promise((resolve) => {
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.onend = resolve;
+          utterance.onerror = resolve;
+          speechSynthesis.speak(utterance);
+        } else {
+          resolve(); // No fallback available
+        }
+      });
+    }
+
+    // Speech recognition
+    function startListening() {
+      if (isSpeaking || recognitionActive || !recognition) return;
+      
+      try {
+        // Configure for longer answers for "tell me about yourself" questions
+        if (currentQuestion.toLowerCase().includes("tell me about yourself")) {
+          debug("Setting longer timeout for descriptive question");
+          recognition.maxSpeechTimeout = 30000; // 30 seconds for long answers
+        } else {
+          recognition.maxSpeechTimeout = 15000; // 15 seconds for regular answers
+        }
+        
+        recognition.start();
+        debug("Started listening for answer");
+
+        // Set timeout for no response - longer for "tell me about yourself"
+        const timeoutDuration = currentQuestion.toLowerCase().includes("tell me about yourself") ? 25000 : 15000;
+        answerTimeout = setTimeout(() => {
+          debug("No speech detected within timeout period");
+          try {
+            recognition.stop();
+          } catch (e) {
+            console.error("Error stopping recognition:", e);
+          }
+          handleNoResponse();
+        }, timeoutDuration);
+      } catch (error) {
+        console.error("Error starting speech recognition:", error);
+        debug("Error starting recognition: " + error.message);
+      }
+    }
+
+    // Answer processing with proper delays
+    async function processAnswer(answer) {
+      if (isInterviewEnding) return;  
+        try {
+            // Wait 2-3 seconds before processing to allow user to complete thought
+            debug("Waiting before processing answer...");
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            
+            const res = await fetch('/submit_voice_answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    session_id,
+                    answer: answer || "(No answer)",
+                    isHrRound: totalTime <= 60,
+                    questionId: currentQuestionId
+                })
+            });
+            
+            const data = await res.json();
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else if (data.question) {
+                currentQuestionId++;
+                
+                // Wait 2-3 seconds before asking next question
+                debug("Waiting before asking next question...");
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                currentQuestion = data.question;
+                isSpeaking = true;
+                await speakText(currentQuestion);
+                isSpeaking = false;
+                addEntry("Bot", currentQuestion);
+                
+                // Start listening for the next answer
+                if (!recognitionActive) {
+                    startListening();
+                }
+            }
+        } catch (error) {
+            if (!isInterviewEnding) { // Only log errors if not ending
+                console.error("Error processing answer:", error);
+                debug("Error processing answer: " + error.message);
+                // Fallback to next question after delay
+                setTimeout(() => {
+                    if (!isInterviewEnding) fetchQuestion();
+                }, 3000);
+            }
+        }
+    }
+
+    // No response handling
+    async function handleNoResponse() {
+        addEntry("Bot", "I didn't hear your response. Let's move on.");
+        await speakText("I didn't hear your response. Let's move on.");
+        
+        // Process empty answer and move to next question
+        await processAnswer("(No answer provided)");
+    }
+
+    // End interview
+     async function endInterview() {
+        if (isInterviewEnding) return;
+        isInterviewEnding = true;
+        
+        try {
+            // Immediately stop all ongoing processes
+            window.speechSynthesis.cancel();
+            
+            if (recognition) {
+                try { 
+                    recognition.stop(); 
+                    recognitionActive = false;
+                } catch(e) {}
+            }
+            
+            // Stop face verification and timers
+            clearInterval(faceVerificationInterval);
+            clearInterval(countdownInterval);
+            clearTimeout(answerTimeout);
+            
+            // Stop webcam stream
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            
+            // Show loading state
+            document.getElementById('endBtn').disabled = true;
+            document.getElementById('endBtn').textContent = 'Processing...';
+            
+            // Call backend to end interview
+            const response = await fetch('/end_interview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.email_sent) {
+                    alert('Interview completed! Results have been sent to your email.');
+                } else {
+                    alert('Interview completed! Results could not be emailed.');
+                }
+                // Redirect to results page
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error ending interview: ' + (data.error || 'Unknown error'));
+                document.getElementById('endBtn').disabled = false;
+                document.getElementById('endBtn').textContent = 'End Interview';
+                isInterviewEnding = false;
+            }
+        } catch (error) {
+            console.error('Error ending interview:', error);
+            debug('Error ending interview: ' + error.message);
+            alert('Failed to end interview. Please try again.');
+            document.getElementById('endBtn').disabled = false;
+            document.getElementById('endBtn').textContent = 'End Interview';
+            isInterviewEnding = false;
+        }
+    }
+
+    // Transcript management
+    function addEntry(speaker, text) {
+      const entry = document.createElement("div");
+      entry.className = `entry ${speaker === "You" ? "user" : "bot"}`;
+      entry.innerHTML = `<div class="bubble"><b>${speaker}:</b> ${text}</div>`;
+      transcriptEl.appendChild(entry);
+      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    }
+
+    // Face verification functions
+    function startFaceVerification() {
+      // Check face every 10 seconds
+      faceVerificationInterval = setInterval(() => {
+        captureAndVerifyFace();
+      }, 10000);
+    }
+
+    async function captureAndVerifyFace() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      const imageData = canvas.toDataURL('image/jpeg');
+      
+      try {
+        const response = await fetch('/recognize_face/{{ user_id }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: imageData
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          console.error('Face verification error:', data.error);
+          verificationStatus.textContent = 'Verification Error';
+          verificationStatus.className = 'verification-status not-verified';
+          return;
+        }
+        
+        if (data.faces && data.faces.length > 0) {
+          const isUser = data.faces[0].isUser;
+          const confidence = data.faces[0].confidence || 100;
+          updateVerificationStatus(isUser);
+          
+          if (!isUser) {
+            verificationFailedCount++;
+            alert(`Face verification failed! Confidence: ${confidence.toFixed(2)}. Please make sure you are the same person who registered.`);
+            
+            // If verification fails multiple times, end the interview
+            if (verificationFailedCount >= 3) {
+              alert('Multiple face verification failures. Ending interview.');
+              endInterview();
+            }
+          } else {
+            verificationFailedCount = 0; // Reset counter on successful verification
+          }
+        } else {
+          // No faces detected
+          verificationStatus.textContent = 'No Face Detected';
+          verificationStatus.className = 'verification-status not-verified';
+        }
+      } catch (error) {
+        console.error('Face verification error:', error);
+        verificationStatus.textContent = 'Network Error';
+        verificationStatus.className = 'verification-status not-verified';
+      }
+    }
+
+    function updateVerificationStatus(isVerified) {
+      if (isVerified) {
+        verificationStatus.textContent = 'Face Verified ✓';
+        verificationStatus.className = 'verification-status verified';
+      } else {
+        verificationStatus.textContent = 'Face Not Verified ✗';
+        verificationStatus.className = 'verification-status not-verified';
+      }
+    }
+
+    // Debug logging
+    function debug(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      debugPanel.innerHTML += `[${timestamp}] ${message}<br>`;
+      debugPanel.scrollTop = debugPanel.scrollHeight;
+      console.log(message);
+    }
+
+    // Listening indicator functions
+    function showListeningIndicator() {
+      listeningIndicator.style.display = 'flex';
+    }
+
+    function hideListeningIndicator() {
+      listeningIndicator.style.display = 'none';
+    }
+
+    // Event listeners
+     endBtn.addEventListener("click", () => {
+        // Immediately stop all processes without waiting
+        window.speechSynthesis.cancel();
+        if (recognition) {
+            try { recognition.stop(); } catch(e) {}
+        }
+        clearInterval(faceVerificationInterval);
+        clearInterval(countdownInterval);
+        clearTimeout(answerTimeout);
+        
+        // Stop webcam
+        if (video.srcObject) {
+            const tracks = video.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+        
+        // Then proceed with ending the interview
+        endInterview();
+    });
+history.pushState(null, null, location.href);
+window.onpopstate = function() {
+    history.go(1);
+};
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Recording - Dark Mode</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --primary-color: #6200ee;
+            --secondary-color: #03dac6;
+            --error-color: #cf6679;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        .question-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #question {
+            font-size: 1.2rem;
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+
+        .speaker-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .speaker-icon:hover {
+            color: var(--secondary-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        #camera {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-out;
+        }
+
+        .recording #camera {
+            box-shadow: 0 0 0 3px var(--error-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        #canvasOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        #textAnswer {
+            width: 70%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        #submitAnswer {
+            background-color: var(--secondary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #submitAnswer:hover {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(207, 102, 121, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(207, 102, 121, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(207, 102, 121, 0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            #question {
+                font-size: 1rem;
+            }
+
+            button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interview Recording</h1>
+        <div class="question-container">
+            <div id="question">Question will appear here...</div>
+            <span class="speaker-icon" onclick="speakQuestion()">🔊</span>
+        </div>
+        <div class="controls">
+            <button id="startBtn" onclick="startRecording()">Start Recording</button>
+            <button id="stopBtn" onclick="stopRecording()" disabled>Stop Recording</button>
+        </div>
+        <div class="input-container">
+            <!--<input type="text" id="textAnswer" placeholder="Type your answer here...">-->
+            <textarea id="textAnswer" placeholder="Type your answer here..." rows="6" cols="50"></textarea>
+            <button id="submitAnswer" onclick="submitTypedAnswer()">Submit</button>
+        </div>
+        <div style="position: relative;">
+            <video id="camera" autoplay></video>
+            <canvas id="canvasOverlay"></canvas>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let questions = [];
+        let recognition = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let video = document.getElementById('camera');
+        let canvas = document.getElementById('canvasOverlay');
+        let ctx = canvas.getContext('2d');
+        let recognitionInterval;
+        let faceRecognitionActive = false;
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream;
+                video.onloadedmetadata = function(e) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                };
+            })
+            .catch(function(err) {
+                console.log("An error occurred: " + err);
+            });
+
+        async function loadQuestions() {
+            const response = await fetch(`/get_questions/{{ user_id }}`);
+            const data = await response.json();
+            questions = data.questions;
+            if (questions.length > 0) {
+                displayQuestion();
+            }
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const questionElement = document.getElementById('question');
+                questionElement.innerText = questions[currentQuestionIndex];
+                questionElement.style.animation = 'none';
+                questionElement.offsetHeight; // Trigger reflow
+                questionElement.style.animation = null;
+            } else {
+                window.location.href = `/six/{{ user_id }}`;
+            }
+        }
+
+       /*function speakQuestion() {
+            const question = document.getElementById('question').innerText;
+            const utterance = new SpeechSynthesisUtterance(question);
+            window.speechSynthesis.speak(utterance);
+        }*/
+        function speakQuestion() {
+            const question = document.getElementById('question').innerText;
+
+            fetch('http://127.0.0.1:5000/speak', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: question })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Audio fetch failed");
+                return response.blob();
+            })
+            .then(audioBlob => {
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            })
+            .catch(error => {
+                console.error('ElevenLabs voice error:', error);
+            });
+        }
+
+
+
+        function startRecording() {
+            if (currentQuestionIndex >= questions.length) {
+                alert('Interview completed!');
+                return;
+            }
+
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textAnswer').value = transcript;
+            };
+
+            recognition.start();
+
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    document.body.classList.add('recording');
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+                    recordedChunks = [];
+                    mediaRecorder.ondataavailable = function (event) {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+                });
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+
+            faceRecognitionActive = true;
+            recognitionInterval = setInterval(recognizeFace, 1000);
+        }
+
+        function stopRecording() {
+            if (recognition) {
+                recognition.stop();
+            }
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+            }
+            document.body.classList.remove('recording');
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+
+            faceRecognitionActive = false;
+            clearInterval(recognitionInterval);
+
+            // Save the transcribed answer
+            const answer = document.getElementById('textAnswer').value.trim();
+            if (answer) {
+                saveAnswer(answer);
+            } else {
+                alert('No answer recorded. Please try again.');
+            }
+        }
+
+        function submitTypedAnswer() {
+            const textAnswer = document.getElementById('textAnswer').value.trim();
+            if (textAnswer) {
+                saveAnswer(textAnswer);
+            } else {
+                alert('Please type an answer before submitting.');
+            }
+        }
+
+        async function saveAnswer(answer) {
+            const response = await fetch(`/save_answer/{{ user_id }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    question: questions[currentQuestionIndex], 
+                    answer: answer 
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                console.log('Answer saved successfully');
+                document.getElementById('textAnswer').value = ''; // Clear the input field
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                console.error('Failed to save answer');
+                alert('Failed to save your answer. Please try again.');
+            }
+        }
+
+        async function recognizeFace() {
+            if (!faceRecognitionActive) return;
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let imageDataUrl = canvas.toDataURL('image/jpeg');
+
+            try {
+                const response = await fetch(`/recognize_face/{{ user_id }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageDataUrl }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                drawFaceBoxes(result.faces);
+                updateMessage(result.faces);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function drawFaceBoxes(faces) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            faces.forEach(face => {
+                ctx.strokeStyle = face.isUser ? 'green' : 'red';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(face.x, face.y, face.width, face.height);
+
+                ctx.fillStyle = face.isUser ? 'green' : 'red';
+                ctx.font = '16px Arial';
+                ctx.fillText(face.message, face.x, face.y - 5);
+            });
+        }
+
+        function updateMessage(faces) {
+            const messageElement = document.getElementById('message');
+            if (faces.length === 0) {
+                messageElement.textContent = "No face detected. Please ensure you're visible in the camera.";
+            } else if (faces.some(face => face.isUser)) {
+                messageElement.textContent = "User verified. You may proceed with the interview.";
+            } else {
+                messageElement.textContent = "Unrecognized face detected. Please ensure it's you in the camera.";
+            }
+        }
+
+        window.onload = loadQuestions;
+    </script>
+</body>
+</html>

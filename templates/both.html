@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewAce - Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #1a3a5f;
+            --primary-dark: #1a3a5f;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --light: #f9fafb;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light-gray: #e5e7eb;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg,#224062 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgb(255, 255, 255);
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(79, 70, 229, 0.05);
+            border-radius: 12px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+
+        .user-details h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .nav-menu {
+    list-style: none;
+    margin-bottom: 1rem; /* just a small spacing after menu */
+}
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .logout-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-text p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .positive {
+            color: #10b981;
+        }
+
+        .negative {
+            color: #ef4444;
+        }
+
+        .interview-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .view-all {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .view-all:hover {
+            opacity: 1;
+        }
+
+        .interview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .interview-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .interview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-desc {
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+            flex-grow: 1;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .card-button {
+            display: block;
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .card-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex-grow: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        /* Progress indicators */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        /* Loading states */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.2) 20%,
+                rgba(255, 255, 255, 0.5) 60%,
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Floating elements */
+        .floating-icon {
+            position: absolute;
+            opacity: 0.2;
+            animation: float 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .icon-1 { top: 5%; left: 5%; font-size: 3rem; animation-delay: 0s; }
+        .icon-2 { top: 15%; right: 10%; font-size: 2rem; animation-delay: 1s; }
+        .icon-3 { bottom: 10%; left: 15%; font-size: 2.5rem; animation-delay: 2s; }
+        .icon-4 { bottom: 5%; right: 5%; font-size: 3.5rem; animation-delay: 3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-cards, .interview-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text">InterviewAce</span>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">{{ user_id[0:2] | upper }}</div>
+                <div class="user-details">
+                    <h3 id="user-name">User: {{ user_id }}</h3>
+                    <p id="user-status">Loading...</p>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <!-- Sidebar (add inside <ul class="nav-menu">) -->
+<li class="nav-item">
+    <a href="{{ url_for('analysis', user_id=user_id) }}" class="nav-link">
+        <i class="fas fa-chart-pie"></i>
+        <span>Analysis</span>
+    </a>
+</li>
+
+                <li class="nav-item">
+                    <a href="{{ url_for('four', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-file-upload"></i>
+                        <span>Resume Upload</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('before', user_id=user_id) }}" class="nav-link" id="face-verification-link">
+                        <i class="fas fa-camera"></i>
+                        <span>Face Verification</span>
+                        <span id="face-verification-status" style="margin-left: auto; font-size: 0.8rem;"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('previous_attempts', user_id=user_id) }}" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>Previous Attempts</span>
+                        <span id="attempts-count" style="margin-left: auto; font-size: 0.8rem;"></span>
+                    </a>
+                </li>
+            </ul>
+            
+            <a href="/logout" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i>
+    <span>Logout</span>
+</a>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <div class="welcome-text">
+                    <h1>Welcome, <span id="welcome-name">{{ user_id }}</span>!</h1>
+                    <p id="welcome-message">Loading your interview data...</p>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">INTERVIEWS COMPLETED</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="completed-interviews">0</div>
+                    <div class="stat-change" id="interview-trend">
+                        <i class="fas fa-minus"></i>
+                        <span>No previous data</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">AVERAGE SCORE</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="average-score">0%</div>
+                    <div class="stat-change" id="score-trend">
+                        <i class="fas fa-minus"></i>
+                        <span>No previous data</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">SKILLS MASTERED</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="skills-mastered">0/0</div>
+                    <div class="stat-change" id="skills-trend">
+                        <i class="fas fa-minus"></i>
+                        <span>No previous data</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interview Options -->
+            <div class="interview-section">
+                <div class="section-header">
+                    <h2 class="section-title">Select Interview Type</h2>
+                </div>
+                
+                <div class="interview-cards">
+                    <div class="interview-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Theoretical Questions</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                        </div>
+                        <p class="card-desc">Test your knowledge with conceptual questions based on your resume and skills.</p>
+                        <div class="card-stats">
+                            <div class="stat">
+                                <div class="stat-number">15-20</div>
+                                <div class="stat-label">Questions</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">05min</div>
+                                <div class="stat-label">Avg. Time</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number" id="theory-completion">0%</div>
+                                <div class="stat-label">Completion</div>
+                            </div>
+                        </div>
+                        <a href="/four/{{ user_id }}" class="card-button" id="theory-button">Start Theoretical Interview</a>
+                    </div>
+                    
+                    <div class="interview-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Practical Questions</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-laptop-code"></i>
+                            </div>
+                        </div>
+                        <p class="card-desc">Solve real-world coding problems and demonstrate your technical skills.</p>
+                        <div class="card-stats">
+                            <div class="stat">
+                                <div class="stat-number">2-3</div>
+                                <div class="stat-label">Problems</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">09min</div>
+                                <div class="stat-label">Avg. Time</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number" id="practical-completion">0%</div>
+                                <div class="stat-label">Completion</div>
+                            </div>
+                        </div>
+                        <a href="/different/{{ user_id }}" class="card-button" id="practical-button">Start Practical Interview</a>
+                    </div>
+                    
+                    <div class="interview-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Aptitude Round</h3>
+                            <div class="card-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                        </div>
+                        <p class="card-desc">Challenge your problem-solving abilities with logic and reasoning questions.</p>
+                        <div class="card-stats">
+                            <div class="stat">
+                                <div class="stat-number">30</div>
+                                <div class="stat-label">Questions</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number">20min</div>
+                                <div class="stat-label">Avg. Time</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number" id="aptitude-completion">0%</div>
+                                <div class="stat-label">Completion</div>
+                            </div>
+                        </div>
+                        <a href="/aptitude/{{ user_id }}" class="card-button" id="aptitude-button">Start Aptitude Test</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="interview-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Activity</h2>
+                    <a href="{{ url_for('previous_attempts', user_id=user_id) }}" class="view-all">View All</a>
+                </div>
+                
+                <div class="recent-activity">
+                    <ul class="activity-list" id="activity-list">
+                        <li class="activity-item loading">
+                            <div class="activity-icon">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4 class="activity-title">Loading activities...</h4>
+                                <p class="activity-desc">Please wait while we fetch your data</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Floating elements -->
+    <div class="floating-icon icon-1">💡</div>
+    <div class="floating-icon icon-2">🖥️</div>
+    <div class="floating-icon icon-3">📚</div>
+    <div class="floating-icon icon-4">🚀</div>
+    
+    <script>
+        // Global variables to store user data
+        let userData = {};
+        let attemptHistory = [];
+         // Push a dummy state so back button doesn't go back
+   // Push initial state
+    history.pushState(null, null, location.href);
+
+    // Prevent back navigation
+    window.addEventListener('popstate', function (event) {
+        history.pushState(null, null, location.href);
+    });
+        // Function to fetch user data from the server
+        async function fetchUserData() {
+            try {
+                const response = await fetch(`/get_user_data/{{ user_id }}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    userData = data;
+                    updateDashboard(data);
+                } else {
+                    console.error('Failed to fetch user data');
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        }
+        
+        // Function to fetch attempt history
+        async function fetchAttemptHistory() {
+            try {
+                const response = await fetch(`/get_previous_attempts/{{ user_id }}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    attemptHistory = Array.isArray(data) ? data : [];
+                    updateAttemptHistory(attemptHistory);
+                } else {
+                    console.error('Failed to fetch attempt history');
+                }
+            } catch (error) {
+                console.error('Error fetching attempt history:', error);
+            }
+        }
+        
+        // Function to update the dashboard with real data
+        function updateDashboard(data) {
+            // Update user info
+            document.getElementById('user-name').textContent = data.name || `User: {{ user_id }}`;
+            document.getElementById('user-status').textContent = data.face_capture_completed ? 'Verified User' : 'Verification Needed';
+            document.getElementById('welcome-name').textContent = data.name || '{{ user_id }}';
+            
+            // Update welcome message based on time of day
+            const hour = new Date().getHours();
+            let timeGreeting = 'Good day';
+            if (hour < 12) timeGreeting = 'Good morning';
+            else if (hour < 17) timeGreeting = 'Good afternoon';
+            else timeGreeting = 'Good evening';
+            
+            document.getElementById('welcome-message').textContent = 
+                `${timeGreeting}! Ready to ace your next interview?`;
+                
+            // Update face verification status
+            const faceStatus = document.getElementById('face-verification-status');
+            if (data.face_capture_completed) {
+                faceStatus.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+                document.getElementById('theory-button').classList.remove('disabled');
+            } else {
+                faceStatus.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
+                document.getElementById('theory-button').classList.add('disabled');
+                document.getElementById('theory-button').onclick = (e) => {
+                    e.preventDefault();
+                    alert('Please complete face verification before starting theoretical interviews');
+                };
+            }
+            
+            // Update stats with real data
+            const completedInterviews = data.attempt_count || 0;
+            document.getElementById('completed-interviews').textContent = completedInterviews;
+            document.getElementById('attempts-count').textContent = `(${completedInterviews})`;
+            
+            const avgScore = data.average_score || 0;
+            document.getElementById('average-score').textContent = `${avgScore}%`;
+            
+            // Calculate skills mastered (simplified for demo)
+            const skillsMastered = Math.min(24, Math.floor(completedInterviews * 2.5));
+            document.getElementById('skills-mastered').textContent = `${skillsMastered}/24`;
+            
+            // Update progress bars
+            document.getElementById('theory-completion').textContent = 
+                data.theory_completion ? `${data.theory_completion}%` : '0%';
+            document.getElementById('practical-completion').textContent = 
+                data.practical_completion ? `${data.practical_completion}%` : '0%';
+            document.getElementById('aptitude-completion').textContent = 
+                data.aptitude_completion ? `${data.aptitude_completion}%` : '0%';
+            
+            // Update trend indicators
+            updateTrendIndicators(data);
+        }
+        
+        // Function to update trend indicators
+        function updateTrendIndicators(data) {
+            const interviewTrend = document.getElementById('interview-trend');
+            const scoreTrend = document.getElementById('score-trend');
+            const skillsTrend = document.getElementById('skills-trend');
+            
+            // Simulate some trends based on attempt count
+            if (data.attempt_count > 0) {
+                interviewTrend.innerHTML = '<i class="fas fa-arrow-up positive"></i><span>Active user</span>';
+                scoreTrend.innerHTML = '<i class="fas fa-arrow-up positive"></i><span>Consistent performer</span>';
+                skillsTrend.innerHTML = '<i class="fas fa-arrow-up positive"></i><span>Learning in progress</span>';
+            }
+        }
+        
+        // Function to update activity feed
+        function updateAttemptHistory(attempts) {
+            const activityList = document.getElementById('activity-list');
+            activityList.innerHTML = '';
+            
+            if (attempts.length === 0) {
+                activityList.innerHTML = `
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4 class="activity-title">No interviews yet</h4>
+                            <p class="activity-desc">Start your first interview to see activity here</p>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+            
+            // Sort attempts by date (newest first) and take latest 3
+            const recentAttempts = attempts
+                .sort((a, b) => new Date(b.attempt_date) - new Date(a.attempt_date))
+                .slice(0, 3);
+            
+            recentAttempts.forEach(attempt => {
+                const attemptDate = new Date(attempt.attempt_date);
+                const formattedDate = attemptDate.toLocaleDateString();
+                const formattedTime = attemptDate.toLocaleTimeString();
+                
+                let activityIcon = 'fas fa-check-circle';
+                let activityType = 'Theoretical Interview';
+                
+                if (attempt.attempt_type === 'practical') {
+                    activityIcon = 'fas fa-laptop-code';
+                    activityType = 'Practical Coding';
+                } else if (attempt.attempt_type === 'aptitude') {
+                    activityIcon = 'fas fa-brain';
+                    activityType = 'Aptitude Test';
+                }
+                
+                activityList.innerHTML += `
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="${activityIcon}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4 class="activity-title">${activityType} Completed</h4>
+                            <p class="activity-desc">Scored ${attempt.overall_similarity || attempt.score || 'N/A'}%</p>
+                            <div class="activity-time">${formattedDate} at ${formattedTime}</div>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = "{{ url_for('login') }}";
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchUserData();
+            fetchAttemptHistory();
+            
+            // Set up periodic data refresh (every 30 seconds)
+            setInterval(() => {
+                fetchUserData();
+                fetchAttemptHistory();
+            }, 30000);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const userId = '{{ user_id }}';  // Pass user_id from Jinja
+    fetch(`/get_total_attempts/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-attempts').textContent = data.total_attempts;  // Update the display element
+            // Optionally update other elements, e.g.:
+            // document.getElementById('avg-score').textContent = /* fetch from another endpoint if needed */;
+        })
+        .catch(error => console.error('Error fetching attempts:', error));
+});
+history.pushState(null, null, location.href);
+window.onpopstate = function() {
+    history.go(1);
+};
+    </script>
+</body>
+</html>
