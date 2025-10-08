@@ -136,10 +136,13 @@ logger = logging.getLogger(__name__)
 email_verification_codes = {}
 
 # Email configuration (replace with your actual email credentials)
-EMAIL_ADDRESS = "sharathsivakumar610@gmail.com"
-EMAIL_PASSWORD = "nrdz lyxy xekq fszx"
+import os
+
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
+
 
 def check_session(user_id):
     """Simple function to validate user session"""
@@ -3793,5 +3796,6 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)
+
 
 
