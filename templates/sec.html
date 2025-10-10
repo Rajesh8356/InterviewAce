@@ -13,106 +13,273 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #1a3a5f;
-            --primary-dark: #1a3a5f;
-            --secondary: #10b981;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --light: #f9fafb;
-            --dark: #1f2937;
-            --gray: #6b7280;
-            --light-gray: #e5e7eb;
-            
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-hover: #f8fafc;
-            
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --text-muted: #9ca3af;
-            
-            --border: #e5e7eb;
-            --border-light: #f3f4f6;
-            
-            --gradient-primary: linear-gradient(135deg, #1a3a5f 0%, #10b981 50%, #f59e0b 100%);
-            --gradient-light: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
-            --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            
-            --shadow-primary: 0 10px 40px rgba(26, 58, 95, 0.15);
-            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 12px 48px rgba(26, 58, 95, 0.2);
-            --shadow-glow: 0 0 20px rgba(26, 58, 95, 0.1);
-        }
-
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            color: var(--text-primary);
-        }
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)),
+                url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") no-repeat center center fixed;
+    background-size: cover;
+    overflow-x: hidden;
+}
 
-        /* Animated Background */
-        .bg-animation {
+        /* Animated Background with Particles */
+        .background-animation {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: var(--bg-primary);
+            overflow: hidden;
         }
 
-        .bg-animation::before {
-            content: '';
+        .floating-shapes {
             position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(26, 58, 95, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 15s infinite ease-in-out;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 65%;
+            left: 85%;
+            animation-delay: -3s;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 15%;
+            animation-delay: -6s;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 25%;
+            left: 75%;
+            animation-delay: -9s;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .shape:nth-child(5) {
+            width: 70px;
+            height: 70px;
+            top: 40%;
+            left: 20%;
+            animation-delay: -12s;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .shape:nth-child(6) {
+            width: 90px;
+            height: 90px;
+            top: 60%;
+            left: 60%;
+            animation-delay: -15s;
+            background: rgba(255, 255, 255, 0.4);
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-20px) rotate(1deg); }
-            66% { transform: translateY(10px) rotate(-1deg); }
+            0%, 100% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+            25% {
+                transform: translateY(-40px) rotate(90deg) scale(1.1);
+            }
+            50% {
+                transform: translateY(20px) rotate(180deg) scale(0.9);
+            }
+            75% {
+                transform: translateY(-20px) rotate(270deg) scale(1.05);
+            }
         }
 
-        .container {
-            background: var(--gradient-card);
-            border-radius: 1.5rem;
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-            width: 90%;
-            max-width: 400px;
-            padding: 3rem;
-            position: relative;
-            z-index: 1;
-            border: 1px solid var(--border);
+        /* Particles Container */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2rem;
-            background: var(--gradient-primary);
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Main Container */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            padding-top: 70px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            animation: slideUp 0.8s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
         }
 
         form {
@@ -121,102 +288,61 @@
         }
 
         .input-group {
-            position: relative;
             margin-bottom: 1.5rem;
-        }
-
-        input {
-            width: 100%;
-            padding: 0.8rem;
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            color: var(--text-primary);
-            font-family: 'Poppins', sans-serif;
-        }
-
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
-            outline: none;
+            position: relative;
         }
 
         label {
             position: absolute;
-            left: 10px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            background-color: var(--bg-card);
-            padding: 0 5px;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
+            color: #7f8c8d;
+            transition: 0.3s ease all;
             pointer-events: none;
+            background: white;
+            padding: 0 4px;
             font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: 0.3s ease all;
+            background: white;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
         }
 
         input:focus + label, input:not(:placeholder-shown) + label {
             top: 0;
-            font-size: 0.8rem;
-            color: var(--primary);
+            font-size: 0.75rem;
+            color: #667eea;
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
-            font-weight: 600;
+            padding: 0.9rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Poppins', sans-serif;
+            margin-top: 0.5rem;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: var(--shadow-primary);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .register-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            color: var(--text-secondary);
-        }
-
-        .register-link a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .register-link a:hover {
-            text-decoration: underline;
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
         .forgot-links {
@@ -226,55 +352,41 @@
         }
 
         .forgot-links a {
-            color: var(--text-secondary);
+            color: #667eea;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
         }
 
         .forgot-links a:hover {
-            color: var(--primary);
             text-decoration: underline;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
         }
 
-        .floating-icon {
-            position: absolute;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
-            color: var(--primary);
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
         }
 
-        .icon-1 {
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
+        .register-link a:hover {
+            text-decoration: underline;
         }
 
-        .icon-2 {
-            top: 70%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-
-        .icon-3 {
-            bottom: 10%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-
-        /* New styles for human verification */
+        /* Human Verification Overlay */
         .verification-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 250, 252, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -282,45 +394,48 @@
         }
 
         .verification-box {
-            background: var(--gradient-card);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             padding: 2rem;
-            border-radius: 1.5rem;
+            border-radius: 15px;
             text-align: center;
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
             max-width: 400px;
             width: 90%;
         }
 
         .verification-box h2 {
+            color: #2c3e50;
             margin-bottom: 1rem;
+            font-weight: 600;
         }
 
         .verification-box p {
-            color: var(--text-secondary);
+            color: #7f8c8d;
             margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
 
         .verification-button {
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             padding: 1rem 2rem;
-            border-radius: 0.75rem;
-            font-size: 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 1rem;
             position: relative;
             overflow: hidden;
-            font-weight: 600;
-            box-shadow: var(--shadow-primary);
-            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
         .verification-button:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
         .verification-button::after {
@@ -346,21 +461,21 @@
 
         .success-message {
             display: none;
-            color: var(--secondary);
-            font-size: 1.2rem;
+            color: #2ecc71;
+            font-size: 1rem;
             margin-top: 1rem;
             animation: success-animation 0.5s ease-out;
-            font-weight: 600;
+            font-weight: 500;
         }
 
-        /* Modal styles for forgot ID/password */
+        /* Modal styles */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 250, 252, 0.95);
+            background: rgba(0, 0, 0, 0.5);
             display: none;
             justify-content: center;
             align-items: center;
@@ -368,46 +483,44 @@
         }
 
         .modal {
-            background: var(--gradient-card);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             padding: 2rem;
-            border-radius: 1.5rem;
+            border-radius: 15px;
             width: 90%;
             max-width: 400px;
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid #e1e8ed;
             position: relative;
         }
 
         .modal h3 {
             margin-top: 0;
-            color: var(--text-primary);
+            color: #2c3e50;
             margin-bottom: 1rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
             font-weight: 600;
         }
 
         .modal p {
-            color: var(--text-secondary);
+            color: #7f8c8d;
             margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
 
         .modal-close {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 12px;
+            right: 12px;
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            color: var(--text-secondary);
+            color: #7f8c8d;
             transition: color 0.3s ease;
         }
 
         .modal-close:hover {
-            color: var(--primary);
+            color: #667eea;
         }
 
         .modal-step {
@@ -418,23 +531,140 @@
             display: block;
         }
 
-        /* Particles container */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
+        /* Mobile Navigation */
+        .mobile-menu {
+            display: none;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.4rem;
+        }
+
+        .hamburger span {
+            width: 20px;
+            height: 2px;
+            background: #2c3e50;
+            margin: 2px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links, .nav-buttons {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .mobile-menu.active {
+                display: block;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                border-top: 1px solid #e1e8ed;
+                padding: 1rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+
+            .mobile-menu a {
+                display: block;
+                padding: 0.8rem 0;
+                text-decoration: none;
+                color: #2c3e50;
+                border-bottom: 1px solid #e1e8ed;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                font-size: 0.9rem;
+            }
+
+            .mobile-menu a:hover {
+                color: #667eea;
+                transform: translateX(8px);
+            }
+
+            .mobile-menu a:last-child {
+                border-bottom: none;
+            }
+
+            .login-card {
+                padding: 2rem;
+                max-width: 380px;
+            }
+
+            .form-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .forgot-links {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.5rem;
+                padding-top: 60px;
+            }
+
+            .login-card {
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Animated Background -->
-    <div class="bg-animation"></div>
+    <!-- Animated Background with Particles -->
+    <div class="background-animation">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
     
+    <!-- Particles Container -->
     <div id="particles-js"></div>
-    
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="logo">InterviewAce</div>
+           
+            <div class="nav-buttons">
+                <a href="/" class="btn btn-primary">Home</a>
+          
+            <a href="/login" class="btn btn-primary">Sign In</a>
+            <a href="/register" class="btn btn-outline">Get Started</a>
+            </div>
+            <div class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="/" class="btn btn-primary">Home</a>
+          
+            <a href="/login" class="btn btn-primary">Sign In</a>
+            <a href="/register" class="btn btn-outline">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Human Verification Overlay -->
     <div class="verification-overlay">
         <div class="verification-box">
             <h2>Human Verification</h2>
@@ -458,7 +688,7 @@
                 <button class="btn btn-primary" onclick="sendUserId()">Send User ID</button>
             </div>
             <div class="modal-step" id="forgotIdStep2">
-                <p style="color: var(--secondary);">Your User ID has been sent to your email address.</p>
+                <p style="color: #2ecc71;">Your User ID has been sent to your email address.</p>
                 <button class="btn btn-primary" onclick="closeModal('forgotIdModal')">Close</button>
             </div>
         </div>
@@ -502,62 +732,90 @@
             </div>
             
             <div class="modal-step" id="forgotPasswordStep4">
-                <p style="color: var(--secondary);">Your password has been successfully reset.</p>
+                <p style="color: #2ecc71;">Your password has been successfully reset.</p>
                 <button class="btn btn-primary" onclick="closeModal('forgotPasswordModal')">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- Main Content -->
     <div class="container">
-        <svg class="floating-icon icon-1" width="50" height="50" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
-        </svg>
-        <svg class="floating-icon icon-2" width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-        </svg>
-        <svg class="floating-icon icon-3" width="60" height="60" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
-        <h2>Login</h2>
-        <form action="/login" method="post">
-            <div class="input-group">
-                <input type="text" id="user_id" name="user_id" required placeholder=" ">
-                <label for="user_id">User ID</label>
+        <div class="login-card">
+            <div class="form-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your account to continue</p>
             </div>
-            <div class="input-group">
-                <input type="password" id="password" name="password" required placeholder=" ">
-                <label for="password">Password</label>
+            
+            <form action="/login" method="post">
+                <div class="input-group">
+                    <input type="text" id="user_id" name="user_id" required placeholder=" ">
+                    <label for="user_id">User ID</label>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" required placeholder=" ">
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+            
+            <div class="forgot-links">
+                <a href="#" onclick="openModal('forgotIdModal')">Forgot User ID?</a>
+                <a href="#" onclick="openModal('forgotPasswordModal')">Forgot Password?</a>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-        
-        <div class="forgot-links">
-            <a href="#" onclick="openModal('forgotIdModal')">Forgot User ID?</a>
-            <a href="#" onclick="openModal('forgotPasswordModal')">Forgot Password?</a>
+            
+            <p class="register-link">Don't have an account? <a href="/register">Create one here</a></p>
         </div>
-        
-        <p class="register-link">Don't have an account? <a href="/register">Register here</a></p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <script>
+        // Initialize particles.js with more visible settings
         particlesJS("particles-js", {
             particles: {
-                number: { value: 80, density: { enable: true, value_area: 800 } },
-                color: { value: "#1a3a5f" },
+                number: { value: 100, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffffff" },
                 shape: { type: "circle" },
-                opacity: { value: 0.3, random: false },
-                size: { value: 3, random: true },
-                line_linked: { enable: true, distance: 150, color: "#1a3a5f", opacity: 0.2, width: 1 },
-                move: { enable: true, speed: 6, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+                opacity: { value: 0.5, random: true },
+                size: { value: 4, random: true },
+                line_linked: { 
+                    enable: true, 
+                    distance: 150, 
+                    color: "#ffffff", 
+                    opacity: 0.4, 
+                    width: 1 
+                },
+                move: { 
+                    enable: true, 
+                    speed: 3, 
+                    direction: "none", 
+                    random: true, 
+                    straight: false, 
+                    out_mode: "out", 
+                    bounce: false 
+                }
             },
             interactivity: {
                 detect_on: "canvas",
-                events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
-                modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+                events: { 
+                    onhover: { enable: true, mode: "repulse" }, 
+                    onclick: { enable: true, mode: "push" }, 
+                    resize: true 
+                },
+                modes: { 
+                    repulse: { distance: 100, duration: 0.4 }, 
+                    push: { particles_nb: 6 } 
+                }
             },
             retina_detect: true
         });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const hamburger = document.querySelector('.hamburger');
+            menu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
 
         // Human verification script
         const verificationOverlay = document.querySelector('.verification-overlay');
@@ -586,7 +844,6 @@
             clearTimeout(holdTimer);
             verificationButton.classList.remove('holding');
             if (Date.now() - holdStartTime < 5000) {
-                // Reset the button if held for less than 5 seconds
                 verificationButton.style.setProperty('--progress', '0%');
             }
         }
@@ -606,7 +863,6 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
-            // Reset modals to first step when closed
             if (modalId === 'forgotIdModal') {
                 document.getElementById('forgotIdStep1').classList.add('active');
                 document.getElementById('forgotIdStep2').classList.remove('active');
@@ -634,9 +890,7 @@
             
             fetch('/forgot-userid', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ email: email })
             })
             .then(response => response.json())
@@ -668,16 +922,14 @@
             
             fetch('/send-password-reset-code', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ user_id: userId })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     resetUserId = userId;
-                    resetCode = data.code; // Store the code for verification
+                    resetCode = data.code;
                     document.getElementById('forgotPasswordStep1').classList.remove('active');
                     document.getElementById('forgotPasswordStep2').classList.add('active');
                 } else {
@@ -722,13 +974,8 @@
             
             fetch('/reset-password', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    user_id: resetUserId, 
-                    new_password: newPassword 
-                })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: resetUserId, new_password: newPassword })
             })
             .then(response => response.json())
             .then(data => {
@@ -753,6 +1000,8 @@
                 }
             });
         });
+
+        // Prevent going back
         history.pushState(null, null, location.href);
         window.onpopstate = function() {
             history.go(1);
