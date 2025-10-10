@@ -61,9 +61,9 @@ import pandas as pd # Added for get_analysis_data
 import speech_recognition as sr
 import threading
 import queue
-#import sounddevice as sd
-#from scipy.io import wavfile
-#import noisereduce as nr
+import sounddevice as sd
+from scipy.io import wavfile
+import noisereduce as nr
 from flask_session import Session
 from datetime import datetime, timedelta
 app = Flask(__name__)
@@ -115,15 +115,13 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Directory to store CSV files
-# Change these:
-CSV_FOLDER = 'output_csv'
-IMAGE_FOLDER = 'images'
-UPLOAD_FOLDER = 'uploads'
-
-# Create directories if they don't exist
+CSV_FOLDER = r"F:/INTERNSHIP - IV SEM/interview_15-09-2025/project5_interview/output_csv"
 os.makedirs(CSV_FOLDER, exist_ok=True)
+
+# Directory to store captured images
+IMAGE_FOLDER = r"F:/INTERNSHIP - IV SEM/interview_15-09-2025/project5_interview/images"
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Face recognition setup
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 recognizer = cv2.face.LBPHFaceRecognizer_create()
@@ -142,7 +140,6 @@ EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-
 
 def check_session(user_id):
     """Simple function to validate user session"""
@@ -272,6 +269,43 @@ def parse_qa_pairs(text):
 
     logger.info(f"Parsed {len(qa_pairs)} Q&A pairs from response")
     return qa_pairs[:5]  # Return up to 5 pairs
+
+def update_database_schema():
+    """Ensure all required columns exist in the database"""
+    conn = sqlite3.connect('reg.db')
+    cursor = conn.cursor()
+    
+    # Check and add missing columns to interview_attempts table
+    cursor.execute("PRAGMA table_info(interview_attempts)")
+    columns = [col[1] for col in cursor.fetchall()]
+    
+    missing_columns = []
+    if 'overall_percentage' not in columns:
+        missing_columns.append('ADD COLUMN overall_percentage REAL')
+    if 'feedback' not in columns:
+        missing_columns.append('ADD COLUMN feedback TEXT')
+    if 'question_count' not in columns:
+        missing_columns.append('ADD COLUMN question_count INTEGER')
+    if 'duration_minutes' not in columns:
+        missing_columns.append('ADD COLUMN duration_minutes INTEGER')
+    if 'interview_type' not in columns:
+        missing_columns.append('ADD COLUMN interview_type TEXT')
+    if 'completed_date' not in columns:
+        missing_columns.append('ADD COLUMN completed_date TEXT')
+    
+    if missing_columns:
+        for column_sql in missing_columns:
+            try:
+                cursor.execute(f"ALTER TABLE interview_attempts {column_sql}")
+                logger.info(f"Added column: {column_sql}")
+            except Exception as e:
+                logger.error(f"Error adding column: {e}")
+    
+    conn.commit()
+    conn.close()
+
+# Call this function when your app starts
+update_database_schema()
 
 @app.route('/check-email', methods=['GET'])
 def check_email():
@@ -939,32 +973,52 @@ def verify_face(user_id):
     return jsonify({'success': False, 'error': 'Verification failed'}), 400
 
 def get_user_attempt_number(user_id):
+    """Get the current attempt number - FIXED"""
     conn = sqlite3.connect('reg.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM interview_attempts WHERE user_id = ?", (user_id,))
-    count = cursor.fetchone()[0]
+    cursor.execute("SELECT MAX(attempt_number) FROM interview_attempts WHERE user_id = ?", (user_id,))
+    result = cursor.fetchone()
     conn.close()
-    return count
+    return result[0] if result[0] is not None else 0
 
 def increment_user_attempt(user_id):
-    current_attempt = get_user_attempt_number(user_id)
-    new_attempt = current_attempt + 1
-    csv_filename = f'{user_id}_questions_answers_attempt_{new_attempt}.csv'
-
+    """Safely increment user attempt - FIXED VERSION"""
     conn = sqlite3.connect('reg.db')
     cursor = conn.cursor()
-    attempt_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    try:
+        # Get current max attempt number
+        cursor.execute("SELECT MAX(attempt_number) FROM interview_attempts WHERE user_id = ?", (user_id,))
+        result = cursor.fetchone()
+        current_max = result[0] if result[0] is not None else 0
+        
+        new_attempt = current_max + 1
+        csv_filename = f'{user_id}_questions_answers_attempt_{new_attempt}.csv'
+        attempt_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    cursor.execute(
-        "INSERT INTO interview_attempts (user_id, attempt_number, attempt_date, csv_filename) VALUES (?, ?, ?, ?)",
-        (user_id, new_attempt, attempt_date, csv_filename)
-    )
+        # Insert only if it doesn't exist
+        cursor.execute(
+            "INSERT INTO interview_attempts (user_id, attempt_number, attempt_date, csv_filename) VALUES (?, ?, ?, ?)",
+            (user_id, new_attempt, attempt_date, csv_filename)
+        )
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        conn.commit()
+        logger.info(f"Created attempt {new_attempt} for user {user_id}")
+        return new_attempt, csv_filename
+        
+    except sqlite3.IntegrityError:
+        # If duplicate, just return the existing attempt
+        conn.rollback()
+        logger.warning(f"Attempt {new_attempt} already exists for user {user_id}")
+        return new_attempt, csv_filename
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"Error incrementing attempt for user {user_id}: {str(e)}")
+        raise
+    finally:
+        conn.close()
 
-    return new_attempt, csv_filename
+    
 
 def get_questions_for_current_attempt(user_id):
     attempt_number = get_user_attempt_number(user_id)
@@ -1056,6 +1110,40 @@ def with_error_handling(f):
                 'has_error': True
             })
     return decorated_function
+
+
+
+def cleanup_incomplete_attempts(user_id):
+    """Remove incomplete attempts to maintain data consistency"""
+    conn = sqlite3.connect('reg.db')
+    cursor = conn.cursor()
+    
+    try:
+        # Delete attempts without scores (incomplete)
+        cursor.execute("""
+            DELETE FROM interview_attempts 
+            WHERE user_id = ? AND overall_percentage IS NULL
+        """, (user_id,))
+        
+        deleted_count = cursor.rowcount
+        conn.commit()
+        
+        if deleted_count > 0:
+            print(f"🧹 Cleaned up {deleted_count} incomplete attempts for user {user_id}")
+        
+        return deleted_count
+    except Exception as e:
+        print(f"Error cleaning up incomplete attempts: {e}")
+        conn.rollback()
+        return 0
+    finally:
+        conn.close()
+
+# Call this when the page loads
+@app.route('/cleanup_attempts/<user_id>')
+def cleanup_attempts(user_id):
+    deleted = cleanup_incomplete_attempts(user_id)
+    return jsonify({'deleted_count': deleted})
 
 @app.route('/')
 def home():
@@ -1349,101 +1437,104 @@ def get_previous_attempts(user_id):
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        # Use the existing query but calculate percentage from similarity
         query = """
             SELECT attempt_number, attempt_date,
                    COALESCE(overall_percentage, overall_similarity, 0) AS overall_percentage,
-                   COALESCE(feedback, '') AS feedback,
+                   COALESCE(feedback, 'No feedback available') AS feedback,
                    COALESCE(question_count, 0) AS question_count,
                    COALESCE(duration_minutes, 0) AS duration_minutes,
-                   COALESCE(interview_type, 'text') AS interview_type
+                   COALESCE(interview_type, 'text') AS interview_type,
+                   COALESCE(completed_date, attempt_date) AS display_date
             FROM interview_attempts
-            WHERE user_id = ?
-            ORDER BY attempt_number ASC
+            WHERE user_id = ? AND overall_percentage IS NOT NULL
+            ORDER BY attempt_number DESC
         """
         cursor.execute(query, (user_id,))
         attempts = cursor.fetchall()
+        
         conn.close()
 
-        return jsonify([
-            {
+        # Transform the data with proper date handling
+        formatted_attempts = []
+        for row in attempts:
+            # Handle date formatting
+            attempt_date = row["display_date"]
+            if attempt_date:
+                try:
+                    # Parse the date string to ensure it's valid
+                    if isinstance(attempt_date, str):
+                        date_obj = datetime.strptime(attempt_date, '%Y-%m-%d %H:%M:%S')
+                        formatted_date = date_obj.strftime('%Y-%m-%d')
+                        formatted_time = date_obj.strftime('%H:%M:%S')
+                    else:
+                        formatted_date = "Unknown Date"
+                        formatted_time = ""
+                except:
+                    formatted_date = "Unknown Date"
+                    formatted_time = ""
+            else:
+                formatted_date = "Unknown Date"
+                formatted_time = ""
+            
+            formatted_attempts.append({
                 "attemptNumber": row["attempt_number"],
-                "date": row["attempt_date"],
-                "overallPercentage": row["overall_percentage"],
+                "date": formatted_date,
+                "time": formatted_time,
+                "overallPercentage": float(row["overall_percentage"]),
                 "feedback": row["feedback"],
                 "questionCount": row["question_count"],
                 "duration": row["duration_minutes"],
                 "interviewType": row["interview_type"]
-            }
-            for row in attempts
-        ])
+            })
+
+        return jsonify(formatted_attempts)
 
     except Exception as e:
-        import traceback; traceback.print_exc()
+        print(f"Error in get_previous_attempts: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
     
-def save_attempt_to_database(user_id, attempt_number, overall_percentage, feedback, question_count=0, duration_minutes=0):
+def save_attempt_to_database(user_id, attempt_number, overall_percentage, feedback, question_count=0, duration_minutes=0, interview_type='text'):
+    """Save attempt details with proper error handling"""
     conn = sqlite3.connect('reg.db')
     cursor = conn.cursor()
-
-    # Check if the new columns exist
-    cursor.execute("PRAGMA table_info(interview_attempts)")
-    columns = [col[1] for col in cursor.fetchall()]
     
-    if 'overall_percentage' in columns:  # Check for overall_percentage
-        cursor.execute(
-            "SELECT id FROM interview_attempts WHERE user_id = ? AND attempt_number = ?",
-            (user_id, attempt_number)
-        )
-        existing = cursor.fetchone()
-
-        if existing:
-            cursor.execute(
-                "UPDATE interview_attempts SET overall_percentage = ?, feedback = ?, question_count = ?, duration_minutes = ? WHERE user_id = ? AND attempt_number = ?",
-                (overall_percentage, feedback, question_count, duration_minutes, user_id, attempt_number)
-            )
-        else:
-            cursor.execute(
-                "INSERT INTO interview_attempts (user_id, attempt_number, attempt_date, overall_percentage, feedback, question_count, duration_minutes, csv_filename) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (
-                    user_id,
-                    attempt_number,
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    overall_percentage,
-                    feedback,
-                    question_count,
-                    duration_minutes,
-                    f"{user_id}_questions_answers_attempt_{attempt_number}.csv"
-                )
-            )
-    else:
-        # Fallback for older schema
-        cursor.execute(
-            "SELECT id FROM interview_attempts WHERE user_id = ? AND attempt_number = ?",
-            (user_id, attempt_number)
-        )
-        existing = cursor.fetchone()
-
-        if existing:
-            cursor.execute(
-                "UPDATE interview_attempts SET csv_filename = ? WHERE user_id = ? AND attempt_number = ?",
-                (f"{user_id}_questions_answers_attempt_{attempt_number}.csv", user_id, attempt_number)
-            )
-        else:
-            cursor.execute(
-                "INSERT INTO interview_attempts (user_id, attempt_number, attempt_date, csv_filename) "
-                "VALUES (?, ?, ?, ?)",
-                (
-                    user_id,
-                    attempt_number,
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    f"{user_id}_questions_answers_attempt_{attempt_number}.csv"
-                )
-            )
-
-    conn.commit()
-    conn.close()
+    try:
+        completed_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        cursor.execute("""
+            UPDATE interview_attempts 
+            SET overall_percentage = ?, 
+                feedback = ?, 
+                question_count = ?, 
+                duration_minutes = ?,
+                interview_type = ?,
+                completed_date = ?
+            WHERE user_id = ? AND attempt_number = ?
+        """, (overall_percentage, feedback, question_count, duration_minutes, interview_type, completed_date, user_id, attempt_number))
+        
+        if cursor.rowcount == 0:
+            # Insert if update didn't find the record
+            cursor.execute("""
+                INSERT INTO interview_attempts 
+                (user_id, attempt_number, attempt_date, overall_percentage, feedback, question_count, duration_minutes, interview_type, completed_date, csv_filename)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user_id, attempt_number, completed_date, overall_percentage, 
+                feedback, question_count, duration_minutes, interview_type, 
+                completed_date, f"{user_id}_questions_answers_attempt_{attempt_number}.csv"
+            ))
+        
+        conn.commit()
+        logger.info(f"Successfully saved attempt {attempt_number} for user {user_id}")
+        
+    except Exception as e:
+        logger.error(f"Error saving attempt to database: {str(e)}")
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 @app.route('/before/<user_id>')
 def before(user_id):
@@ -2824,27 +2915,24 @@ def generate_hr_question(prev_question, prev_answer, asked_questions, user_name)
 def process_audio(user_id):
     try:
         audio_file = request.files['audio']
-        
-        # Use speech_recognition directly
-        r = sr.Recognizer()
-        
-        # Save the uploaded file temporarily
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
             audio_file.save(tmp.name)
-            
-            # Recognize speech
+            # Optional: Noise reduction
+            rate, data = wavfile.read(tmp.name)
+            reduced = nr.reduce_noise(y=data, sr=rate)
+            wavfile.write(tmp.name, rate, reduced)
+            # Recognize
+            r = sr.Recognizer()
             with sr.AudioFile(tmp.name) as source:
                 audio = r.record(source)
-                text = r.recognize_google(audio)
-            
-            # Clean up
-            os.unlink(tmp.name)
-            
+                text = r.recognize_google(audio)  # Or use recognize_sphinx for offline
+        os.unlink(tmp.name)
+        # Store/process text as needed (e.g., evaluate answer)
         return jsonify({'success': True, 'text': text})
     except Exception as e:
         logger.error(f"Audio processing error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
-        
+
 def get_fallback_technical_question(asked_questions, user_name):
     """Fallback technical questions when generation fails"""
     fallback_tech_questions = [
@@ -3216,9 +3304,18 @@ def cleanup_interview_session_route():
 def get_total_attempts(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM interview_attempts WHERE user_id = ?", (user_id,))
+    
+    # Count only completed attempts (with scores) - CONSISTENT with other queries
+    cursor.execute("""
+        SELECT COUNT(DISTINCT attempt_number) 
+        FROM interview_attempts 
+        WHERE user_id = ? AND overall_percentage IS NOT NULL
+    """, (user_id,))
+    
     total_attempts = cursor.fetchone()[0]
     conn.close()
+    
+    print(f"🎯 Total COMPLETED attempts for {user_id}: {total_attempts}")
     return jsonify({'total_attempts': total_attempts})
 
 @app.route('/clear_session')
@@ -3646,7 +3743,50 @@ def get_analysis_data(user_id):
         scores.append(a["overall_percentage"])
         dates.append(a["attempt_date"].split()[0] if a["attempt_date"] else f"Attempt {a['attempt_number']}")
 
-    # Skills distribution (sample data - you'll need to implement this properly)
+    # Get monthly data using attempt_date - Show last 6 months
+    cursor.execute("""
+        WITH months_series AS (
+            SELECT 
+                strftime('%Y-%m', date('now', '-' || (n-1) || ' months')) as month
+            FROM (
+                SELECT 1 as n UNION SELECT 2 UNION SELECT 3 
+                UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+            )
+            ORDER BY month
+        )
+        SELECT 
+            ms.month,
+            COALESCE(COUNT(ia.attempt_number), 0) as attempt_count,
+            COALESCE(AVG(ia.overall_percentage), 0) as avg_score
+        FROM months_series ms
+        LEFT JOIN interview_attempts ia ON (
+            strftime('%Y-%m', ia.attempt_date) = ms.month 
+            AND ia.user_id = ? 
+            AND ia.overall_percentage IS NOT NULL
+        )
+        GROUP BY ms.month
+        ORDER BY ms.month
+    """, (user_id,))
+    
+    monthly_data = cursor.fetchall()
+    
+    # Process monthly data
+    months = []
+    monthly_attempts = []
+    monthly_scores = []
+    
+    for row in monthly_data:
+        month_str = row["month"]
+        year = month_str[:4]
+        month_num = int(month_str[5:7])
+        month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        month_label = f"{month_names[month_num-1]} {year}"
+        
+        months.append(month_label)
+        monthly_attempts.append(row["attempt_count"])
+        monthly_scores.append(round(row["avg_score"], 1))
+
+    # Skills distribution
     skills_data = [
         {"skill": "Python", "score": 75},
         {"skill": "SQL", "score": 68},
@@ -3658,7 +3798,7 @@ def get_analysis_data(user_id):
     skills_labels = [s["skill"] for s in skills_data]
     skills_scores = [s["score"] for s in skills_data]
 
-    # Question type distribution (sample data - you'll need to implement this properly)
+    # Question type distribution
     question_types = [
         {"type": "Technical", "score": 75},
         {"type": "Practical", "score": 68},
@@ -3682,7 +3822,10 @@ def get_analysis_data(user_id):
         "scores": scores,
         "skills_labels": skills_labels,
         "skills_data": skills_scores,
-        "question_types": question_types
+        "question_types": question_types,
+        "months": months,
+        "monthly_attempts": monthly_attempts,
+        "monthly_scores": monthly_scores
     })
     
 @app.route('/download_scorecard/<user_id>')
@@ -3755,27 +3898,36 @@ def get_user_data(user_id):
     cursor.execute("SELECT name FROM details WHERE user_id = ?", (user_id,))
     user = cursor.fetchone()
 
-    # Get attempt count
-    cursor.execute("SELECT COUNT(*) FROM interview_attempts WHERE user_id = ?", (user_id,))
+    # Get ONLY COMPLETED attempts count (consistent with other queries)
+    cursor.execute("""
+        SELECT COUNT(*) FROM interview_attempts 
+        WHERE user_id = ? AND overall_percentage IS NOT NULL
+    """, (user_id,))
     attempt_count = cursor.fetchone()[0]
 
-    # Get average score
-    cursor.execute("SELECT AVG(overall_similarity) FROM interview_attempts WHERE user_id = ?", (user_id,))
-    avg_score = cursor.fetchone()[0] or 0
+    # Get average score from COMPLETED attempts only
+    cursor.execute("""
+        SELECT AVG(overall_percentage) FROM interview_attempts 
+        WHERE user_id = ? AND overall_percentage IS NOT NULL
+    """, (user_id,))
+    avg_score_result = cursor.fetchone()
+    avg_score = avg_score_result[0] or 0 if avg_score_result[0] is not None else 0
 
     # Check face capture status
     face_capture_completed = user_has_face_capture(user_id)
 
     conn.close()
 
+    print(f"📊 User data for {user_id}: {attempt_count} completed attempts, avg score: {avg_score}")
+
     return jsonify({
         'name': user['name'] if user else None,
-        'attempt_count': attempt_count,
+        'attempt_count': attempt_count,  # This is now consistent
         'average_score': round(avg_score, 1),
         'face_capture_completed': face_capture_completed,
-        'theory_completion': min(100, attempt_count * 20),  # Simplified calculation
-        'practical_completion': 0,  # You'll need to implement tracking for this
-        'aptitude_completion': 0    # You'll need to implement tracking for this
+        'theory_completion': min(100, attempt_count * 20),
+        'practical_completion': 0,
+        'aptitude_completion': 0
     })
 
 @app.route('/analysis/<user_id>')
@@ -3796,6 +3948,4 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)
-
-
 
