@@ -5,37 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Our Community</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-        body, html {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+
+  /* Interview-style background */
+  background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSiW0HtRNdDtLAhW22WOIbiFRB75rQ_x0olHA&s") no-repeat center center fixed;
+  background-size: cover;
+}
+
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            font-family: 'Poppins', sans-serif;
-            background: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            width: 90%;
-            max-width: 1200px;
-            height: 600px;
-            display: flex;
-        }
-
-        .image-section {
-            flex: 1;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            z-index: -1;
             overflow: hidden;
         }
 
@@ -47,28 +44,222 @@
 
         .shape {
             position: absolute;
-            opacity: 0.7;
-            animation: float 20s infinite linear;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) {
+            width: 60px;
+            height: 60px;
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 65%;
+            left: 85%;
+            animation-delay: -3s;
+        }
+
+        .shape:nth-child(3) {
+            width: 50px;
+            height: 50px;
+            top: 80%;
+            left: 15%;
+            animation-delay: -6s;
+        }
+
+        .shape:nth-child(4) {
+            width: 70px;
+            height: 70px;
+            top: 25%;
+            left: 75%;
+            animation-delay: -9s;
         }
 
         @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-            100% { transform: translateY(0) rotate(360deg); }
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            33% {
+                transform: translateY(-20px) rotate(120deg);
+            }
+            66% {
+                transform: translateY(10px) rotate(240deg);
+            }
         }
 
-        .quote {
-            color: white;
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
             font-size: 1.5rem;
-            text-align: center;
-            max-width: 80%;
-            z-index: 10;
-            opacity: 0;
-            animation: fadeIn 2s forwards;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Main Container */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            padding-top: 70px;
+        }
+
+        .registration-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px;
+            height: auto;
+            min-height: 550px;
+            display: flex;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .image-section {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        .image-content {
+            text-align: center;
+            color: white;
+            z-index: 2;
+        }
+
+        .image-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .image-content p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.5;
         }
 
         .form-section {
@@ -79,9 +270,74 @@
             justify-content: center;
         }
 
-        h1 {
-            color: #2c3e50;
+        .form-header {
             margin-bottom: 1.5rem;
+        }
+
+        .form-header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        /* Google Sign-In Button */
+        .google-signin-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.8rem;
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #5f6368;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .google-btn:hover {
+            border-color: #4285f4;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .google-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .divider span {
+            padding: 0 0.8rem;
         }
 
         form {
@@ -90,65 +346,74 @@
         }
 
         .input-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
             position: relative;
         }
 
         label {
             position: absolute;
-            left: 10px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #7f8c8d;
             transition: 0.3s ease all;
             pointer-events: none;
+            background: white;
+            padding: 0 4px;
+            font-size: 0.9rem;
         }
 
         input {
             width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #bdc3c7;
-            border-radius: 5px;
-            font-size: 1rem;
+            padding: 0.9rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.9rem;
             transition: 0.3s ease all;
+            background: white;
         }
 
         input:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
         }
 
         input:focus + label, input:not(:placeholder-shown) + label {
             top: 0;
-            font-size: 0.8rem;
-            background: white;
-            padding: 0 5px;
+            font-size: 0.75rem;
+            color: #667eea;
         }
 
-        button {
-            background: #3498db;
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 0.8rem;
-            border-radius: 5px;
-            font-size: 1rem;
+            padding: 0.9rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.3s ease all;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
         }
 
-        button:hover {
-            background: #2980b9;
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
         .login-link {
             text-align: center;
-            margin-top: 1rem;
+            margin-top: 1.2rem;
             color: #7f8c8d;
+            font-size: 0.9rem;
         }
 
         .login-link a {
-            color: #3498db;
+            color: #667eea;
             text-decoration: none;
+            font-weight: 500;
         }
 
         .login-link a:hover {
@@ -157,15 +422,15 @@
 
         .error-message {
             color: #e74c3c;
-            font-size: 0.9rem;
-            margin-top: 0.2rem;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
             display: none;
         }
 
         .success-message {
             color: #2ecc71;
-            font-size: 0.9rem;
-            margin-top: 0.2rem;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
             display: none;
         }
         
@@ -177,11 +442,12 @@
         .email-verified::after {
             content: "✓";
             position: absolute;
-            right: 10px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #2ecc71;
             font-weight: bold;
+            font-size: 1rem;
         }
         
         .verify-email-btn {
@@ -189,100 +455,329 @@
             color: white;
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
             cursor: pointer;
-            margin-top: 0.5rem;
+            margin-top: 0.4rem;
             display: none;
+            transition: all 0.3s ease;
         }
         
         .verify-email-btn:hover {
             background: #27ae60;
+            transform: translateY(-1px);
         }
+
+        /* Mobile Navigation */
+        .mobile-menu {
+            display: none;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.4rem;
+        }
+
+        .hamburger span {
+            width: 20px;
+            height: 2px;
+            background: #2c3e50;
+            margin: 2px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links, .nav-buttons {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .mobile-menu.active {
+                display: block;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                border-top: 1px solid #e1e8ed;
+                padding: 1rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+
+            .mobile-menu a {
+                display: block;
+                padding: 0.8rem 0;
+                text-decoration: none;
+                color: #2c3e50;
+                border-bottom: 1px solid #e1e8ed;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                font-size: 0.9rem;
+            }
+
+            .mobile-menu a:hover {
+                color: #667eea;
+                transform: translateX(8px);
+            }
+
+            .mobile-menu a:last-child {
+                border-bottom: none;
+            }
+
+            .registration-card {
+                flex-direction: column;
+                max-width: 400px;
+            }
+
+            .image-section {
+                padding: 1.5rem;
+            }
+
+            .image-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .image-content p {
+                font-size: 0.85rem;
+            }
+
+            .form-section {
+                padding: 1.5rem;
+            }
+
+            .form-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.5rem;
+                padding-top: 60px;
+            }
+
+            .registration-card {
+                border-radius: 15px;
+            }
+
+            .image-section, .form-section {
+                padding: 1rem;
+            }
+        }
+        .registration-card {
+  display: flex;
+  width: 900px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+/* Left Half */
+.image-section {
+  flex: 1;
+  background: url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") no-repeat center center;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+.image-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5); /* dark overlay so text is readable */
+}
+
+.image-content {
+  position: relative;
+  z-index: 1;
+  max-width: 80%;
+}
+
+.image-content h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.image-content p {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* Right Half */
+.form-section {
+  flex: 1;
+  padding: 40px;
+}
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="image-section">
-            <div class="floating-shapes">
-                <svg class="shape" style="left: 10%; top: 20%;" width="50" height="50" viewBox="0 0 50 50">
-                    <circle cx="25" cy="25" r="20" fill="#fff" fill-opacity="0.5" />
-                </svg>
-                <svg class="shape" style="left: 60%; top: 60%;" width="60" height="60" viewBox="0 0 60 60">
-                    <rect width="40" height="40" x="10" y="10" fill="#fff" fill-opacity="0.5" />
-                </svg>
-                <svg class="shape" style="left: 80%; top: 10%;" width="40" height="40" viewBox="0 0 40 40">
-                    <polygon points="20,0 40,40 0,40" fill="#fff" fill-opacity="0.5" />
-                </svg>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="logo">InterviewAce</div>
+            
+            <div class="nav-buttons">
+                <a href="/" class="btn btn-outline">Home</a>
+                <a href="/login" class="btn btn-outline">Sign In</a>
+                <a href="/register" class="btn btn-primary">Get Started</a>
             </div>
-            <div class="quote">
-                "Welcome to the registration page"
+            <div class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
-        <div class="form-section">
-            <h1>Create Your Account</h1>
-            <form id="registrationForm" action="/register" method="post" onsubmit="return validateForm()">
-                <div class="input-group">
-                    <input type="text" id="name" name="name" required placeholder=" ">
-                    <label for="name">Full Name</label>
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="/" class="btn btn-outline">Home</a>
+                <a href="/login" class="btn btn-outline">Sign In</a>
+                <a href="/register" class="btn btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="registration-card">
+            <div class="image-section">
+                <div class="image-content">
+                    <h2>Start Your Journey</h2>
+                    <p>Join thousands of developers who have successfully landed their dream jobs through our comprehensive interview preparation platform.</p>
                 </div>
-                
-                <div class="input-group" id="emailGroup">
-                    <input type="email" id="email" name="email" required placeholder=" " onblur="checkEmailExists()">
-                    <label for="email">Email Address</label>
-                    <div id="emailError" class="error-message"></div>
-                    <button type="button" id="verifyEmailBtn" class="verify-email-btn" onclick="sendVerificationCode()">Verify Email</button>
+            </div>
+            <div class="form-section">
+                <div class="form-header">
+                    <h1>Create Your Account</h1>
+                    <p>Join our community and ace your interviews</p>
                 </div>
 
-                <div class="input-group">
-                    <input type="text" id="phone" name="phone" required placeholder=" ">
-                    <label for="phone">Phone Number</label>
-                    <div id="phoneError" class="error-message"></div>
+                <!-- Google Sign-In Section -->
+                <div class="google-signin-section">
+                    <button class="google-btn" onclick="signInWithGoogle()">
+                        <svg class="google-icon" viewBox="0 0 24 24" width="18" height="18">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+                    
+                    <div class="divider">
+                        <span>or continue with email</span>
+                    </div>
                 </div>
 
-                <div class="input-group">
-                    <input type="password" id="password" name="password" required placeholder=" ">
-                    <label for="password">Password</label>
-                </div>
+                <form id="registrationForm" action="/register" method="post" onsubmit="return validateForm()">
+                    <div class="input-group">
+                        <input type="text" id="name" name="name" required placeholder=" ">
+                        <label for="name">Full Name</label>
+                    </div>
+                    
+                    <div class="input-group" id="emailGroup">
+                        <input type="email" id="email" name="email" required placeholder=" " onblur="checkEmailExists()">
+                        <label for="email">Email Address</label>
+                        <div id="emailError" class="error-message"></div>
+                        <button type="button" id="verifyEmailBtn" class="verify-email-btn" onclick="sendVerificationCode()">Verify Email</button>
+                    </div>
 
-                <button type="submit" id="submitButton">Sign Up</button>
-            </form>
-            <p class="login-link">Already have an account? <a href="/login">Log in</a></p>
+                    <div class="input-group">
+                        <input type="text" id="phone" name="phone" required placeholder=" ">
+                        <label for="phone">Phone Number</label>
+                        <div id="phoneError" class="error-message"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="password" name="password" required placeholder=" ">
+                        <label for="password">Password</label>
+                    </div>
+
+                    <button type="submit" id="submitButton">Create Account</button>
+                </form>
+                <p class="login-link">Already have an account? <a href="/login">Sign in here</a></p>
+            </div>
         </div>
     </div>
     
     <!-- Verification Modal -->
     <div id="verificationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px;">
-            <h2>Verify Your Email</h2>
-            <p>We've sent a 4-digit code to your email. Please enter it below.</p>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 1.5rem; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+            <h2 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3rem;">Verify Your Email</h2>
+            <p style="color: #7f8c8d; margin-bottom: 1.2rem; font-size: 0.85rem;">We've sent a 4-digit code to your email. Please enter it below.</p>
             
             <div class="input-group">
-                <input type="text" id="verificationCode" name="verificationCode" placeholder=" " maxlength="4">
+                <input type="text" id="verificationCode" name="verificationCode" placeholder=" " maxlength="4" style="text-align: center; font-size: 1.1rem; letter-spacing: 0.4rem;">
                 <label for="verificationCode">Verification Code</label>
                 <div id="codeError" class="error-message"></div>
             </div>
             
-            <div id="timer" style="color: #e74c3c; margin: 1rem 0;">
+            <div id="timer" style="color: #e74c3c; margin: 1rem 0; text-align: center; font-weight: 500; font-size: 0.9rem;">
                 Time remaining: 01:00
             </div>
             
-            <div style="display: flex; justify-content: space-between;">
-                <button type="button" onclick="resendCode()" id="resendBtn" disabled style="background: #95a5a6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: not-allowed;">
+            <div style="display: flex; justify-content: space-between; gap: 0.8rem;">
+                <button type="button" onclick="resendCode()" id="resendBtn" disabled style="background: #95a5a6; color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 6px; cursor: not-allowed; flex: 1; font-size: 0.85rem;">
                     Resend Code (60s)
                 </button>
-                <button type="button" onclick="verifyCode()" style="background: #3498db; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
+                <button type="button" onclick="verifyCode()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 6px; cursor: pointer; flex: 1; font-size: 0.85rem;">
                     Verify
                 </button>
             </div>
             
-            <button type="button" onclick="closeVerificationModal()" style="background: none; border: none; color: #7f8c8d; position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.5rem;">
+            <button type="button" onclick="closeVerificationModal()" style="background: none; border: none; color: #7f8c8d; position: absolute; top: 12px; right: 12px; cursor: pointer; font-size: 1.2rem;">
                 &times;
             </button>
         </div>
     </div>
     
     <script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        const hamburger = document.querySelector('.hamburger');
+        menu.classList.toggle('active');
+        hamburger.classList.toggle('active');
+    }
+
+    // Google Sign-In Function
+    function signInWithGoogle() {
+        console.log('Initiating Google Sign-In...');
+        
+        const googleBtn = document.querySelector('.google-btn');
+        const originalText = googleBtn.innerHTML;
+        googleBtn.innerHTML = '<div>Connecting to Google...</div>';
+        googleBtn.disabled = true;
+        
+        setTimeout(() => {
+            alert('Google Sign-In would be implemented here with proper OAuth integration');
+            googleBtn.innerHTML = originalText;
+            googleBtn.disabled = false;
+        }, 1000);
+    }
+
     // Global variables
     let verificationTimer;
     let timeLeft = 60;
@@ -290,70 +785,64 @@
     let emailToVerify = '';
     
     function validateForm() {
-    const phone = document.getElementById('phone').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const name = document.getElementById('name').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const phoneError = document.getElementById('phoneError');
-    const emailError = document.getElementById('emailError');
-    
-    // Reset errors
-    phoneError.textContent = "";
-    phoneError.style.display = "none";
-    emailError.textContent = "";
-    emailError.style.display = "none";
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const phoneError = document.getElementById('phoneError');
+        const emailError = document.getElementById('emailError');
+        
+        phoneError.textContent = "";
+        phoneError.style.display = "none";
+        emailError.textContent = "";
+        emailError.style.display = "none";
 
-    let isValid = true;
+        let isValid = true;
 
-    // Check if email is verified
-    const emailInput = document.getElementById('email');
-    if (!emailInput.classList.contains('email-verified')) {
-        emailError.textContent = "Please verify your email first";
-        emailError.style.display = "block";
-        isValid = false;
+        const emailInput = document.getElementById('email');
+        if (!emailInput.classList.contains('email-verified')) {
+            emailError.textContent = "Please verify your email first";
+            emailError.style.display = "block";
+            isValid = false;
+        }
+
+        if (!name) {
+            alert("Please enter your full name");
+            isValid = false;
+        }
+
+        if (!email) {
+            alert("Please enter your email address");
+            isValid = false;
+        }
+
+        if (!phone) {
+            alert("Please enter your phone number");
+            isValid = false;
+        }
+
+        if (!password) {
+            alert("Please enter a password");
+            isValid = false;
+        }
+
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(phone)) {
+            phoneError.textContent = "Enter a valid 10-digit phone number starting with 6-9.";
+            phoneError.style.display = "block";
+            isValid = false;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            emailError.textContent = "Enter a valid email address.";
+            emailError.style.display = "block";
+            isValid = false;
+        }
+
+        return isValid;
     }
 
-    // Basic validation
-    if (!name) {
-        alert("Please enter your full name");
-        isValid = false;
-    }
-
-    if (!email) {
-        alert("Please enter your email address");
-        isValid = false;
-    }
-
-    if (!phone) {
-        alert("Please enter your phone number");
-        isValid = false;
-    }
-
-    if (!password) {
-        alert("Please enter a password");
-        isValid = false;
-    }
-
-    // Phone validation: 10 digits only
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-        phoneError.textContent = "Enter a valid 10-digit phone number starting with 6-9.";
-        phoneError.style.display = "block";
-        isValid = false;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        emailError.textContent = "Enter a valid email address.";
-        emailError.style.display = "block";
-        isValid = false;
-    }
-
-    return isValid;
-}
-
-    // Check if email already exists
     function checkEmailExists() {
         const email = document.getElementById('email').value.trim();
         const emailError = document.getElementById('emailError');
@@ -383,7 +872,6 @@
             });
     }
     
-    // Function to send verification code
     function sendVerificationCode() {
         const email = document.getElementById('email').value.trim();
         const emailError = document.getElementById('emailError');
@@ -402,26 +890,14 @@
         }
         
         emailToVerify = email;
-        
-        // Show verification modal
         document.getElementById('verificationModal').style.display = 'block';
-        
-        // Generate a random 4-digit code
         verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-        
-        // Start the timer
         startTimer();
         
-        // Make an API call to your backend to send the email
         fetch('/send-verification-code', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email: email,
-                code: verificationCode
-            })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email, code: verificationCode})
         })
         .then(response => response.json())
         .then(data => {
@@ -441,7 +917,6 @@
         });
     }
     
-    // Function to start the timer
     function startTimer() {
         timeLeft = 60;
         updateTimerDisplay();
@@ -457,13 +932,12 @@
                 clearInterval(verificationTimer);
                 document.getElementById('resendBtn').disabled = false;
                 document.getElementById('resendBtn').style.cursor = 'pointer';
-                document.getElementById('resendBtn').style.background = '#3498db';
+                document.getElementById('resendBtn').style.background = '#667eea';
                 document.getElementById('resendBtn').textContent = 'Resend Code';
             }
         }, 1000);
     }
     
-    // Update timer display
     function updateTimerDisplay() {
         const minutes = Math.floor(timeLeft / 60);
         const seconds = timeLeft % 60;
@@ -474,48 +948,42 @@
         }
     }
     
-    // Function to resend verification code
     function resendCode() {
         if (timeLeft > 0) return;
-        
         sendVerificationCode();
     }
     
     function verifyCode() {
-    const enteredCode = document.getElementById('verificationCode').value.trim();
-    const codeError = document.getElementById('codeError');
+        const enteredCode = document.getElementById('verificationCode').value.trim();
+        const codeError = document.getElementById('codeError');
 
-    fetch('/verify-email-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            email: emailToVerify,
-            code: enteredCode
+        fetch('/verify-email-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({email: emailToVerify, code: enteredCode})
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            codeError.style.display = "none";
-            const emailInput = document.getElementById('email');
-            emailInput.classList.add('email-verified');
-            document.getElementById('verifyEmailBtn').style.display = 'none';
-            closeVerificationModal();
-            clearInterval(verificationTimer);
-            alert("✅ Email verified successfully!");
-        } else {
-            codeError.textContent = "Invalid verification code";
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                codeError.style.display = "none";
+                const emailInput = document.getElementById('email');
+                emailInput.classList.add('email-verified');
+                document.getElementById('verifyEmailBtn').style.display = 'none';
+                closeVerificationModal();
+                clearInterval(verificationTimer);
+                alert("✅ Email verified successfully!");
+            } else {
+                codeError.textContent = "Invalid verification code";
+                codeError.style.display = "block";
+            }
+        })
+        .catch(err => {
+            console.error("Error verifying code:", err);
+            codeError.textContent = "Server error. Please try again.";
             codeError.style.display = "block";
-        }
-    })
-    .catch(err => {
-        console.error("Error verifying code:", err);
-        codeError.textContent = "Server error. Please try again.";
-        codeError.style.display = "block";
-    });
-}
+        });
+    }
 
-    // Close verification modal
     function closeVerificationModal() {
         document.getElementById('verificationModal').style.display = 'none';
         document.getElementById('verificationCode').value = '';
@@ -523,12 +991,11 @@
         clearInterval(verificationTimer);
     }
     
-    // Clear timer when page is unloaded
     window.addEventListener('beforeunload', () => {
         if (verificationTimer) {
             clearInterval(verificationTimer);
         }
     });
-</script>
+    </script>
 </body>
 </html>
