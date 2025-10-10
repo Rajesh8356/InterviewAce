@@ -770,64 +770,105 @@
         </div>
     </div>
 
-    <script>
-        // Global variables
-        let allAttempts = [];
-        let performanceChart, progressChart, detailedChart;
+   <script>
+    // Global variables
+    let allAttempts = [];
+    let performanceChart, progressChart, detailedChart;
 
-        // Load attempts data
-        async function loadAttemptsData() {
-            const userId = '{{ user_id }}';
-            try {
-                const response = await fetch(`/get_previous_attempts/${userId}`);
-                const attempts = await response.json();
-                return attempts;
-            } catch (error) {
-                console.error('Error loading attempts:', error);
-                return [];
-            }
-        }
-        
-
-        // Calculate summary statistics
-        function calculateSummaryStats(attempts) {
-            const totalAttempts = attempts.length;
-            const scores = attempts.map(a => a.overallPercentage); // Use overallPercentage instead of overallSimilarity
-            const totalScore = scores.reduce((sum, score) => sum + score, 0);
-            const avgScore = totalAttempts > 0 ? Math.round(totalScore / totalAttempts) : 0;
-            const highScore = attempts.length > 0 ? Math.max(...scores) : 0;
-            const lowScore = attempts.length > 0 ? Math.min(...scores) : 0;
-            const successRate = totalAttempts > 0 ? 
-                Math.round((attempts.filter(a => a.overallPercentage >= 70).length / totalAttempts) * 100) : 0;
+    // Load attempts data - WITH CACHE BUSTING
+    async function loadAttemptsData() {
+        const userId = '{{ user_id }}';
+        try {
+            console.log('🔄 Loading attempts data for user:', userId);
             
+            // Add cache-busting parameter to prevent cached responses
+            const timestamp = new Date().getTime();
+            const response = await fetch(`/get_previous_attempts/${userId}?t=${timestamp}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const attempts = await response.json();
+            console.log('✅ Received attempts data:', attempts.length, 'records');
+            
+            // Ensure all percentages are numbers
+            const validatedAttempts = attempts.map(attempt => ({
+                ...attempt,
+                overallPercentage: typeof attempt.overallPercentage === 'number' ? 
+                    attempt.overallPercentage : 
+                    parseFloat(attempt.overallPercentage) || 0
+            }));
+            
+            return validatedAttempts;
+        } catch (error) {
+            console.error('❌ Error loading attempts:', error);
+            return [];
+        }
+    }
+
+    // Calculate summary statistics
+    function calculateSummaryStats(attempts) {
+        console.log('📊 Calculating stats for:', attempts.length, 'attempts');
+        
+        const totalAttempts = attempts.length;
+        
+        if (totalAttempts === 0) {
             return {
-                totalAttempts,
-                avgScore,
-                highScore,
-                lowScore,
-                successRate,
-                scores
+                totalAttempts: 0,
+                avgScore: 0,
+                highScore: 0,
+                lowScore: 0,
+                successRate: 0,
+                scores: []
             };
         }
+        
+        const scores = attempts.map(a => a.overallPercentage);
+        const totalScore = scores.reduce((sum, score) => sum + score, 0);
+        const avgScore = Math.round(totalScore / totalAttempts);
+        const highScore = Math.max(...scores);
+        const lowScore = Math.min(...scores);
+        const successRate = Math.round((attempts.filter(a => a.overallPercentage >= 70).length / totalAttempts) * 100);
+        
+        const stats = {
+            totalAttempts,
+            avgScore,
+            highScore,
+            lowScore,
+            successRate,
+            scores
+        };
+        
+        console.log('📈 Calculated stats:', stats);
+        return stats;
+    }
 
-        // Get status class based on score
-        function getStatusClass(score) {
-            if (score >= 80) return 'success';
-            if (score >= 50) return 'warning';
-            return 'failure';
-        }
+    // Get status class based on score
+    function getStatusClass(score) {
+        if (score >= 80) return 'success';
+        if (score >= 50) return 'warning';
+        return 'failure';
+    }
 
-        // Get status text based on score
-        function getStatusText(score) {
-            if (score >= 80) return 'Excellent';
-            if (score >= 70) return 'Good';
-            if (score >= 50) return 'Fair';
-            return 'Needs Improvement';
-        }
+    // Get status text based on score
+    function getStatusText(score) {
+        if (score >= 80) return 'Excellent';
+        if (score >= 70) return 'Good';
+        if (score >= 50) return 'Fair';
+        return 'Needs Improvement';
+    }
 
-        // Format date
-        function formatDate(dateString) {
+    // Format date
+    function formatDate(dateString) {
+        try {
+            if (!dateString) return 'Date not available';
+            
             const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid date';
+            }
+            
             return date.toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -835,90 +876,150 @@
                 hour: '2-digit',
                 minute: '2-digit'
             });
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return 'Date format error';
         }
+    }
 
-        // Create attempt element for the list
-        function createAttemptElement(attempt) {
-            const statusClass = getStatusClass(attempt.overallPercentage); // Use overallPercentage
-            const statusText = getStatusText(attempt.overallPercentage); // Use overallPercentage
-            
-            const attemptItem = document.createElement('div');
-            attemptItem.className = `attempt-item ${statusClass}`;
-            attemptItem.dataset.attemptNumber = attempt.attemptNumber;
-            attemptItem.dataset.status = statusClass;
-            
-            attemptItem.innerHTML = `
-                <div class="attempt-number">#${attempt.attemptNumber}</div>
-                <div class="progress-circle">
-                    <svg viewBox="0 0 36 36" width="70" height="70">
-                        <path class="circle-bg"
-                            d="M18 2.0845
-                            a 15.9155 15.9155 0 0 1 0 31.831
-                            a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                        <path class="circle circle-${statusClass}"
-                            stroke-dasharray="${attempt.overallPercentage}, 100" // Use overallPercentage
-                            d="M18 2.0845
-                            a 15.9155 15.9155 0 0 1 0 31.831
-                            a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                    </svg>
-                    <div class="progress-text">${attempt.overallPercentage}%</div> <!-- Use overallPercentage -->
-                </div>
-                <div class="attempt-details">
-                    <div class="attempt-header">
-                        <div class="attempt-date">${formatDate(attempt.date)}</div>
-                        <div class="attempt-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-question-circle"></i>
-                                ${attempt.questionCount || 'N/A'} questions
-                            </div>
-                            <div class="stat-item">
-                                <i class="fas fa-clock"></i>
-                                ${attempt.duration || 'N/A'} min
-                            </div>
-                        </div>
+    // Create attempt element for the list
+    // Create attempt element for the list - USE SEQUENTIAL NUMBERING
+function createAttemptElement(attempt, sequentialIndex) {
+    const statusClass = getStatusClass(attempt.overallPercentage);
+    const statusText = getStatusText(attempt.overallPercentage);
+    
+    const attemptItem = document.createElement('div');
+    attemptItem.className = `attempt-item ${statusClass}`;
+    attemptItem.dataset.attemptNumber = attempt.attemptNumber;
+    attemptItem.dataset.sequentialNumber = sequentialIndex + 1;
+    attemptItem.dataset.status = statusClass;
+    
+    attemptItem.innerHTML = `
+        <div class="attempt-number">#${sequentialIndex + 1}</div>
+        <div class="progress-circle">
+            <svg viewBox="0 0 36 36" width="70" height="70">
+                <path class="circle-bg"
+                    d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle circle-${statusClass}"
+                    stroke-dasharray="${attempt.overallPercentage}, 100"
+                    d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+            </svg>
+            <div class="progress-text">${Math.round(attempt.overallPercentage)}%</div>
+        </div>
+        <div class="attempt-details">
+            <div class="attempt-header">
+                <div class="attempt-date">${formatDate(attempt.date)}</div>
+                <div class="attempt-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-question-circle"></i>
+                        ${attempt.questionCount || 'N/A'} questions
                     </div>
-                    <div class="attempt-feedback">${attempt.feedback || 'No feedback available'}</div>
-                    <div class="attempt-status"><strong>Status:</strong> ${statusText}</div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        ${attempt.duration || 'N/A'} min
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hashtag"></i>
+                        ID: #${attempt.attemptNumber}
+                    </div>
                 </div>
-                <div class="attempt-actions">
-                    <button class="action-btn view-btn" data-attempt-number="${attempt.attemptNumber}">
-                        <i class="fas fa-eye"></i> Details
-                    </button>
-                </div>
-            `;
-            
-            return attemptItem;
-        }
+            </div>
+            <div class="attempt-feedback">${attempt.feedback || 'No feedback available'}</div>
+            <div class="attempt-status"><strong>Status:</strong> ${statusText}</div>
+        </div>
+        <div class="attempt-actions">
+            <button class="action-btn view-btn" data-attempt-number="${attempt.attemptNumber}">
+                <i class="fas fa-eye"></i> Details
+            </button>
+        </div>
+    `;
+    
+    return attemptItem;
+}
 
-        // Update summary statistics
-        function updateSummaryStats(stats) {
-            document.getElementById('total-attempts').textContent = stats.totalAttempts;
-            document.getElementById('avg-score').textContent = `${stats.avgScore}%`;
-            document.getElementById('high-score').textContent = `${stats.highScore}%`;
-            document.getElementById('low-score').textContent = `${stats.lowScore}%`;
-        }
+    // Update summary statistics
+    function updateSummaryStats(stats) {
+        console.log('📊 Updating summary stats with:', stats.totalAttempts, 'attempts');
+        
+        document.getElementById('total-attempts').textContent = stats.totalAttempts;
+        document.getElementById('avg-score').textContent = `${stats.avgScore}%`;
+        document.getElementById('high-score').textContent = `${stats.highScore}%`;
+        document.getElementById('low-score').textContent = `${stats.lowScore}%`;
+        
+        // Also update the attempts count in sidebar
+        document.getElementById('attempts-count').textContent = `(${stats.totalAttempts})`;
+    }
 
-        // Initialize performance chart
-        function initPerformanceChart(stats) {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            
-            if (performanceChart) {
-                performanceChart.destroy();
-            }
-            
+    // Initialize performance chart - COMPLETELY REFRESHED
+    function initPerformanceChart(stats) {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        
+        // Completely destroy any existing chart
+        if (performanceChart) {
+            performanceChart.destroy();
+            performanceChart = null;
+        }
+        
+        // Clear the canvas
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Handle case when there are no attempts
+        if (stats.totalAttempts === 0) {
             performanceChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Excellent (80-100%)', 'Good (70-79%)', 'Fair (50-69%)', 'Needs Improvement (<50%)'],
+                    labels: ['No Data Available'],
                     datasets: [{
-                        data: [
-                            stats.scores.filter(s => s >= 80).length,
-                            stats.scores.filter(s => s >= 70 && s < 80).length,
-                            stats.scores.filter(s => s >= 50 && s < 70).length,
-                            stats.scores.filter(s => s < 50).length
-                        ],
+                        data: [1],
+                        backgroundColor: ['#6b7280']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            return;
+        }
+        
+        // Calculate category counts
+        const excellentCount = stats.scores.filter(s => s >= 80).length;
+        const goodCount = stats.scores.filter(s => s >= 70 && s < 80).length;
+        const fairCount = stats.scores.filter(s => s >= 50 && s < 70).length;
+        const needsImprovementCount = stats.scores.filter(s => s < 50).length;
+        
+        console.log('🎯 Performance chart data:', {
+            excellent: excellentCount,
+            good: goodCount,
+            fair: fairCount,
+            needsImprovement: needsImprovementCount,
+            total: stats.totalAttempts
+        });
+        
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            performanceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        `Excellent (80-100%) - ${excellentCount}`,
+                        `Good (70-79%) - ${goodCount}`, 
+                        `Fair (50-69%) - ${fairCount}`,
+                        `Needs Improvement (<50%) - ${needsImprovementCount}`
+                    ],
+                    datasets: [{
+                        data: [excellentCount, goodCount, fairCount, needsImprovementCount],
                         backgroundColor: [
                             '#10b981', // success
                             '#f59e0b', // accent
@@ -933,232 +1034,390 @@
                     plugins: {
                         legend: {
                             position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Initialize progress chart
-        function initProgressChart(attempts) {
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            
-            if (progressChart) {
-                progressChart.destroy();
-            }
-            
-            // Sort attempts by attempt number
-            const sortedAttempts = [...attempts].sort((a, b) => a.attemptNumber - b.attemptNumber);
-            
-            progressChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: sortedAttempts.map(a => `Attempt ${a.attemptNumber}`),
-                    datasets: [{
-                        label: 'Score Progress',
-                        data: sortedAttempts.map(a => a.overallPercentage), // Use overallPercentage
-                        borderColor: '#1a3a5f',
-                        backgroundColor: 'rgba(26, 58, 95, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} attempts (${percentage}%)`;
                                 }
                             }
                         }
                     }
                 }
             });
+        }, 100);
+    }
+
+    // Initialize progress chart - COMPLETELY REFRESHED
+// Initialize progress chart - USE SEQUENTIAL NUMBERING for completed attempts
+function initProgressChart(attempts) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    // Destroy existing chart
+    if (progressChart) {
+        progressChart.destroy();
+        progressChart = null;
+    }
+    
+    // Handle case when there are no attempts
+    if (attempts.length === 0) {
+        progressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['No Data'],
+                datasets: [{
+                    label: 'Score Progress',
+                    data: [0],
+                    borderColor: '#1a3a5f',
+                    backgroundColor: 'rgba(26, 58, 95, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return;
+    }
+    
+    // Sort attempts by attempt number
+    const sortedAttempts = [...attempts].sort((a, b) => a.attemptNumber - b.attemptNumber);
+    
+    // Use sequential numbering (1, 2, 3, ...) instead of actual attempt numbers
+    const sequentialLabels = sortedAttempts.map((attempt, index) => `Attempt ${index + 1}`);
+    
+    console.log('📈 Progress chart data - SEQUENTIAL numbering:', {
+        sequentialLabels: sequentialLabels,
+        actualAttemptNumbers: sortedAttempts.map(a => a.attemptNumber),
+        scores: sortedAttempts.map(a => a.overallPercentage),
+        totalCompletedAttempts: sortedAttempts.length
+    });
+    
+    progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            // Use sequential labels (1, 2, 3, ...) instead of actual attempt numbers
+            labels: sequentialLabels,
+            datasets: [{
+                label: 'Score Progress',
+                data: sortedAttempts.map(a => a.overallPercentage),
+                borderColor: '#1a3a5f',
+                backgroundColor: 'rgba(26, 58, 95, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#1a3a5f',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const actualAttemptNumber = sortedAttempts[context.dataIndex].attemptNumber;
+                            return `Score: ${context.raw}% (Actual Attempt #${actualAttemptNumber})`;
+                        },
+                        afterLabel: function(context) {
+                            const actualAttemptNumber = sortedAttempts[context.dataIndex].attemptNumber;
+                            return `Actual Attempt: #${actualAttemptNumber}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Score (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Completed Attempt Sequence'
+                    }
+                }
+            }
         }
+    });
+}
 
-        // Show attempt details in modal
-        function showAttemptDetails(attempt) {
-            const statusText = getStatusText(attempt.overallPercentage); // Use overallPercentage
+    // Show attempt details in modal
+    function showAttemptDetails(attempt) {
+        const statusText = getStatusText(attempt.overallPercentage);
 
-            document.getElementById('modal-title').textContent = `Attempt ${attempt.attemptNumber} Details`;
-            document.getElementById('modal-attempt-number').textContent = attempt.attemptNumber;
-            document.getElementById('modal-score').textContent = `${attempt.overallPercentage}%`; // Use overallPercentage
-            document.getElementById('modal-duration').textContent = attempt.duration || 'N/A';
-            document.getElementById('modal-date').textContent = formatDate(attempt.date);
-            document.getElementById('modal-questions').textContent = attempt.questionCount || 'N/A';
-            document.getElementById('modal-status').textContent = statusText;
-            document.getElementById('modal-feedback').textContent = attempt.feedback || "No feedback available";
-
-            // Initialize detailed chart
-            initDetailedChart(attempt);
-
-            document.getElementById('detail-modal').style.display = 'flex';
-        }
+        document.getElementById('modal-title').textContent = `Attempt ${attempt.attemptNumber} Details`;
+        document.getElementById('modal-attempt-number').textContent = attempt.attemptNumber;
+        document.getElementById('modal-score').textContent = `${Math.round(attempt.overallPercentage)}%`;
+        document.getElementById('modal-duration').textContent = attempt.duration || 'N/A';
+        document.getElementById('modal-date').textContent = formatDate(attempt.date);
+        document.getElementById('modal-questions').textContent = attempt.questionCount || 'N/A';
+        document.getElementById('modal-status').textContent = statusText;
+        document.getElementById('modal-feedback').textContent = attempt.feedback || "No feedback available";
 
         // Initialize detailed chart
-        function initDetailedChart(attempt) {
-            const ctx = document.getElementById('detailedChart').getContext('2d');
-            
-            if (detailedChart) {
-                detailedChart.destroy();
-            }
-            
-            // This would ideally come from more detailed data about the attempt
-            // For now, we'll create a sample chart
-            detailedChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Technical Knowledge', 'Communication', 'Problem Solving', 'Time Management'],
-                    datasets: [{
-                        label: 'Skill Assessment',
-                        data: [
-                            Math.min(100, attempt.overallPercentage + 10), // Use overallPercentage
-                            Math.min(100, attempt.overallPercentage - 5), // Use overallPercentage
-                            Math.min(100, attempt.overallPercentage + 5), // Use overallPercentage
-                            Math.min(100, attempt.overallPercentage - 10) // Use overallPercentage
-                        ],
-                        backgroundColor: [
-                            'rgba(26, 58, 95, 0.7)',
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(245, 158, 11, 0.7)',
-                            'rgba(239, 68, 68, 0.7)'
-                        ]
-                    }]
+        initDetailedChart(attempt);
+
+        document.getElementById('detail-modal').style.display = 'flex';
+    }
+
+    // Initialize detailed chart
+    // Initialize detailed chart - FIXED VERSION (no negative values)
+function initDetailedChart(attempt) {
+    const ctx = document.getElementById('detailedChart').getContext('2d');
+    
+    if (detailedChart) {
+        detailedChart.destroy();
+    }
+    
+    // Calculate skill scores ensuring no negative values
+    const baseScore = Math.max(0, attempt.overallPercentage); // Ensure base score is not negative
+    
+    const skillScores = [
+        Math.min(100, Math.max(0, baseScore + 10)),  // Technical Knowledge: +10, min 0
+        Math.min(100, Math.max(0, baseScore - 5)),   // Communication: -5, min 0  
+        Math.min(100, Math.max(0, baseScore + 5)),   // Problem Solving: +5, min 0
+        Math.min(100, Math.max(0, baseScore - 10))   // Time Management: -10, min 0
+    ];
+    
+    console.log('📊 Detailed chart scores:', {
+        baseScore: baseScore,
+        skillScores: skillScores,
+        labels: ['Technical Knowledge', 'Communication', 'Problem Solving', 'Time Management']
+    });
+    
+    detailedChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Technical Knowledge', 'Communication', 'Problem Solving', 'Time Management'],
+            datasets: [{
+                label: 'Skill Assessment (%)',
+                data: skillScores,
+                backgroundColor: [
+                    'rgba(26, 58, 95, 0.7)',
+                    'rgba(16, 185, 129, 0.7)',
+                    'rgba(245, 158, 11, 0.7)',
+                    'rgba(239, 68, 68, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(26, 58, 95)',
+                    'rgb(16, 185, 129)',
+                    'rgb(245, 158, 11)',
+                    'rgb(239, 68, 68)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    min: 0, // Ensure y-axis starts at 0
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Score (%)'
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Skill Categories'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Score: ${context.raw}%`;
                         }
                     }
                 }
-            });
-        }
-
-        // Filter attempts
-        function filterAttempts(filter) {
-            const attemptsList = document.getElementById('attempts-list');
-            const attemptItems = attemptsList.querySelectorAll('.attempt-item');
-            
-            attemptItems.forEach(item => {
-                if (filter === 'all' || item.dataset.status === filter) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        // Initialize the page
-        async function initializePage() {
-            try {
-                document.getElementById('attempts-list').innerHTML = '<div style="text-align: center; padding: 30px;">Loading attempts...</div>';
-                
-                allAttempts = await loadAttemptsData();
-                
-                if (allAttempts.length === 0) {
-                    document.getElementById('attempts-list').innerHTML = `
-                        <div style="text-align: center; padding: 30px;">
-                            <i class="fas fa-inbox" style="font-size: 48px; color: #6b7280; margin-bottom: 15px;"></i>
-                            <h3>No attempts found</h3>
-                            <p>You haven't completed any interviews yet.</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                const stats = calculateSummaryStats(allAttempts);
-                updateSummaryStats(stats);
-                initPerformanceChart(stats);
-                initProgressChart(allAttempts);
-                
-                const attemptsList = document.getElementById('attempts-list');
-                attemptsList.innerHTML = '';
-                
-                allAttempts.forEach(attempt => {
-                    const element = createAttemptElement(attempt);
-                    attemptsList.appendChild(element);
-                });
-
-                // Add event listeners to view buttons
-                document.querySelectorAll('.view-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const attemptNumber = btn.dataset.attemptNumber;
-                        const attempt = allAttempts.find(a => a.attemptNumber == attemptNumber);
-                        showAttemptDetails(attempt);
-                    });
-                });
-
-                // Add event listeners to filter buttons
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        filterAttempts(btn.dataset.filter);
-                    });
-                });
-
-                // Close modal
-                document.getElementById('close-modal').addEventListener('click', () => {
-                    document.getElementById('detail-modal').style.display = 'none';
-                });
-
-                // Close modal when clicking outside
-                document.getElementById('detail-modal').addEventListener('click', (e) => {
-                    if (e.target === document.getElementById('detail-modal')) {
-                        document.getElementById('detail-modal').style.display = 'none';
-                    }
-                });
-
-            } catch (error) {
-                console.error('Error initializing page:', error);
-                document.getElementById('attempts-list').innerHTML = `
-                    <div style="text-align: center; padding: 30px; color: #ef4444;">
-                        <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
-                        <h3>Error loading attempts</h3>
-                        <p>Please try again later.</p>
-                    </div>
-                `;
             }
         }
+    });
+}
 
-        // Initialize the page when loaded
-        window.addEventListener('DOMContentLoaded', initializePage);
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const userId = '{{ user_id }}';  // Pass user_id from Jinja
-            fetch(`/get_total_attempts/${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('total-attempts').textContent = data.total_attempts;  // Update the display element
-                    // Optionally update other elements, e.g.:
-                    // document.getElementById('avg-score').textContent = /* fetch from another endpoint if needed */;
-                })
-                .catch(error => console.error('Error fetching attempts:', error));
+    // Filter attempts
+    function filterAttempts(filter) {
+        const attemptsList = document.getElementById('attempts-list');
+        const attemptItems = attemptsList.querySelectorAll('.attempt-item');
+        
+        attemptItems.forEach(item => {
+            if (filter === 'all' || item.dataset.status === filter) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
         });
+    }
 
-        // Back button prevention
-        window.history.pushState(null, null, window.location.href);
-        window.onpopstate = function() {
-            window.history.go(1);
-        };
+    // Initialize the page - WITH FORCE REFRESH
+    async function initializePage() {
+        try {
+            console.log('🚀 Initializing previous attempts page...');
+            
+            document.getElementById('attempts-list').innerHTML = '<div style="text-align: center; padding: 30px;">Loading attempts...</div>';
+            
+            // Force refresh by clearing any cached data
+            allAttempts = [];
+            if (performanceChart) {
+                performanceChart.destroy();
+                performanceChart = null;
+            }
+            if (progressChart) {
+                progressChart.destroy();
+                progressChart = null;
+            }
+            
+            allAttempts = await loadAttemptsData();
+            console.log('📋 Loaded attempts:', allAttempts.length, 'records');
+            
+            if (allAttempts.length === 0) {
+                document.getElementById('attempts-list').innerHTML = `
+                    <div style="text-align: center; padding: 30px;">
+                        <i class="fas fa-inbox" style="font-size: 48px; color: #6b7280; margin-bottom: 15px;"></i>
+                        <h3>No attempts found</h3>
+                        <p>You haven't completed any interviews yet.</p>
+                        <a href="{{ url_for('four', user_id=user_id) }}" class="button" style="margin-top: 15px;">
+                            <i class="fas fa-play-circle"></i> Start Your First Interview
+                        </a>
+                    </div>
+                `;
+                
+                // Initialize empty charts
+                const emptyStats = calculateSummaryStats([]);
+                updateSummaryStats(emptyStats);
+                initPerformanceChart(emptyStats);
+                initProgressChart([]);
+                return;
+            }
+            
+            const stats = calculateSummaryStats(allAttempts);
+            console.log('🎯 Final stats for charts:', stats);
+            
+            updateSummaryStats(stats);
+            initPerformanceChart(stats);
+            initProgressChart(allAttempts);
+            
+            const attemptsList = document.getElementById('attempts-list');
+            attemptsList.innerHTML = '';
+
+            // Sort attempts by attempt number in DESCENDING order (newest first)
+            const sortedAttempts = [...allAttempts].sort((a, b) => b.attemptNumber - a.attemptNumber);
+
+            console.log('📝 Creating attempt list with SEQUENTIAL numbering (NEWEST FIRST):');
+            console.log('   Sequential numbers: 1 to', sortedAttempts.length);
+            console.log('   Actual attempt numbers (newest first):', sortedAttempts.map(a => a.attemptNumber));
+
+            // Create elements with sequential numbering (1, 2, 3, ...) - newest first
+            sortedAttempts.forEach((attempt, index) => {
+                const sequentialNumber = index + 1;
+                console.log(`   Sequential #${sequentialNumber} = Actual #${attempt.attemptNumber}`);
+                const element = createAttemptElement(attempt, index);
+                attemptsList.appendChild(element);
+            });
+
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const attemptNumber = parseInt(btn.dataset.attemptNumber);
+                    const attempt = allAttempts.find(a => a.attemptNumber === attemptNumber);
+                    if (attempt) {
+                        showAttemptDetails(attempt);
+                    }
+                });
+            });
+
+            // Add event listeners to filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterAttempts(btn.dataset.filter);
+                });
+            });
+
+            // Close modal
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.getElementById('detail-modal').style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('detail-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('detail-modal')) {
+                    document.getElementById('detail-modal').style.display = 'none';
+                }
+            });
+
+            console.log('✅ Page initialized successfully with', allAttempts.length, 'attempts');
+
+        } catch (error) {
+            console.error('❌ Error initializing page:', error);
+            document.getElementById('attempts-list').innerHTML = `
+                <div style="text-align: center; padding: 30px; color: #ef4444;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <h3>Error loading attempts</h3>
+                    <p>Please try again later.</p>
+                    <button class="button" onclick="location.reload()" style="margin-top: 15px;">
+                        <i class="fas fa-redo"></i> Reload Page
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    // Initialize the page when loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM Content Loaded - Starting fresh initialization');
+        initializePage();
+    });
+
+    // Back button prevention
+    history.pushState(null, null, location.href);
+    window.addEventListener('popstate', function(event) {
         history.pushState(null, null, location.href);
-        window.onpopstate = function() {
-            history.go(1);
-        };
-    </script>
+    });
+</script>
 </body>
 </html>
