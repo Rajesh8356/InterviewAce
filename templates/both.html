@@ -509,6 +509,56 @@
                 align-items: flex-start;
             }
         }
+/* Add these styles to your existing CSS */
+.interview-card.locked {
+    opacity: 0.7;
+    position: relative;
+    pointer-events: none;
+}
+
+.locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.lock-icon {
+    font-size: 2rem;
+    color: #f59e0b;
+    margin-bottom: 0.5rem;
+}
+
+.locked-text {
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.coming-soon {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.card-button.disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+}
+
+.card-button.disabled:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -658,7 +708,7 @@
                         <a href="/four/{{ user_id }}" class="card-button" id="theory-button">Start Theoretical Interview</a>
                     </div>
                     
-                    <div class="interview-card">
+                   <!-- <div class="interview-card">
                         <div class="card-header">
                             <h3 class="card-title">Practical Questions</h3>
                             <div class="card-icon">
@@ -708,7 +758,74 @@
                         <a href="/aptitude/{{ user_id }}" class="card-button" id="aptitude-button">Start Aptitude Test</a>
                     </div>
                 </div>
+            </div>-->
+            <!-- Practical Card - LOCKED -->
+        <div class="interview-card locked">
+            <div class="locked-overlay">
+                <div class="lock-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="locked-text">Feature Locked</div>
+                <div class="coming-soon">Coming Soon</div>
             </div>
+            <div class="card-header">
+                <h3 class="card-title">Practical Questions</h3>
+                <div class="card-icon">
+                    <i class="fas fa-laptop-code"></i>
+                </div>
+            </div>
+            <p class="card-desc">Solve real-world coding problems and demonstrate your technical skills.</p>
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-number">2-3</div>
+                    <div class="stat-label">Problems</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">09min</div>
+                    <div class="stat-label">Avg. Time</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="practical-completion">0%</div>
+                    <div class="stat-label">Completion</div>
+                </div>
+            </div>
+            <a href="/different/{{ user_id }}" class="card-button disabled" id="practical-button">Start Practical Interview</a>
+        </div>
+        
+        <!-- Aptitude Card - LOCKED -->
+        <div class="interview-card locked">
+            <div class="locked-overlay">
+                <div class="lock-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="locked-text">Feature Locked</div>
+                <div class="coming-soon">Coming Soon</div>
+            </div>
+            <div class="card-header">
+                <h3 class="card-title">Aptitude Round</h3>
+                <div class="card-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+            </div>
+            <p class="card-desc">Challenge your problem-solving abilities with logic and reasoning questions.</p>
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-number">30</div>
+                    <div class="stat-label">Questions</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">20min</div>
+                    <div class="stat-label">Avg. Time</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="aptitude-completion">0%</div>
+                    <div class="stat-label">Completion</div>
+                </div>
+            </div>
+            <a href="/aptitude/{{ user_id }}" class="card-button disabled" id="aptitude-button">Start Aptitude Test</a>
+        </div>
+    </div>
+</div>
             
             <!-- Recent Activity -->
             <div class="interview-section">
@@ -744,44 +861,73 @@
         // Global variables to store user data
         let userData = {};
         let attemptHistory = [];
-         // Push a dummy state so back button doesn't go back
-   // Push initial state
-    history.pushState(null, null, location.href);
-
-    // Prevent back navigation
-    window.addEventListener('popstate', function (event) {
+        
+        // Push a dummy state so back button doesn't go back
         history.pushState(null, null, location.href);
-    });
-        // Function to fetch user data from the server
+
+        // Prevent back navigation
+        window.addEventListener('popstate', function (event) {
+            history.pushState(null, null, location.href);
+        });
+
+        // Function to fetch user data from the server - FIXED VERSION
         async function fetchUserData() {
             try {
+                console.log('🔄 Fetching user data for:', '{{ user_id }}');
                 const response = await fetch(`/get_user_data/{{ user_id }}`);
+                
                 if (response.ok) {
                     const data = await response.json();
                     userData = data;
+                    
+                    console.log('✅ Received user data:', data);
+                    
+                    // Update the dashboard with ALL the data
                     updateDashboard(data);
+                    
                 } else {
-                    console.error('Failed to fetch user data');
+                    console.error('❌ Failed to fetch user data');
+                    // Set default values if fetch fails
+                    setDefaultDashboardValues();
                 }
             } catch (error) {
-                console.error('Error fetching user data:', error);
+                console.error('❌ Error fetching user data:', error);
+                // Set default values if error occurs
+                setDefaultDashboardValues();
             }
         }
         
-        // Function to fetch attempt history
-        async function fetchAttemptHistory() {
-            try {
-                const response = await fetch(`/get_previous_attempts/{{ user_id }}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    attemptHistory = Array.isArray(data) ? data : [];
-                    updateAttemptHistory(attemptHistory);
-                } else {
-                    console.error('Failed to fetch attempt history');
-                }
-            } catch (error) {
-                console.error('Error fetching attempt history:', error);
-            }
+        // Function to set default values when data can't be fetched
+        function setDefaultDashboardValues() {
+            console.log('🔄 Setting default dashboard values');
+            
+            // Update basic info
+            document.getElementById('user-name').textContent = `User: {{ user_id }}`;
+            document.getElementById('user-status').textContent = 'Verification Needed';
+            document.getElementById('welcome-name').textContent = '{{ user_id }}';
+            
+            // Update stats with zeros
+            document.getElementById('completed-interviews').textContent = '0';
+            document.getElementById('average-score').textContent = '0%';
+            document.getElementById('skills-mastered').textContent = '0/0';
+            document.getElementById('attempts-count').textContent = '(0)';
+            
+            // Update progress bars
+            document.getElementById('theory-completion').textContent = '0%';
+            document.getElementById('practical-completion').textContent = '0%';
+            document.getElementById('aptitude-completion').textContent = '0%';
+            
+            // Update welcome message
+            const hour = new Date().getHours();
+            let timeGreeting = 'Good day';
+            if (hour < 12) timeGreeting = 'Good morning';
+            else if (hour < 17) timeGreeting = 'Good afternoon';
+            else timeGreeting = 'Good evening';
+            
+            document.getElementById('welcome-message').textContent = 
+                `${timeGreeting}! Ready to ace your next interview?`;
+                
+            console.log('✅ Default values set');
         }
         
         // Function to update the dashboard with real data
@@ -837,6 +983,8 @@
             
             // Update trend indicators
             updateTrendIndicators(data);
+            
+            console.log('✅ Dashboard fully updated with real data');
         }
         
         // Function to update trend indicators
@@ -853,61 +1001,85 @@
             }
         }
         
-        // Function to update activity feed
-        function updateAttemptHistory(attempts) {
-            const activityList = document.getElementById('activity-list');
-            activityList.innerHTML = '';
-            
-            if (attempts.length === 0) {
-                activityList.innerHTML = `
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <div class="activity-content">
-                            <h4 class="activity-title">No interviews yet</h4>
-                            <p class="activity-desc">Start your first interview to see activity here</p>
-                        </div>
-                    </li>
-                `;
-                return;
-            }
-            
-            // Sort attempts by date (newest first) and take latest 3
-            const recentAttempts = attempts
-                .sort((a, b) => new Date(b.attempt_date) - new Date(a.attempt_date))
-                .slice(0, 3);
-            
-            recentAttempts.forEach(attempt => {
-                const attemptDate = new Date(attempt.attempt_date);
-                const formattedDate = attemptDate.toLocaleDateString();
-                const formattedTime = attemptDate.toLocaleTimeString();
-                
-                let activityIcon = 'fas fa-check-circle';
-                let activityType = 'Theoretical Interview';
-                
-                if (attempt.attempt_type === 'practical') {
-                    activityIcon = 'fas fa-laptop-code';
-                    activityType = 'Practical Coding';
-                } else if (attempt.attempt_type === 'aptitude') {
-                    activityIcon = 'fas fa-brain';
-                    activityType = 'Aptitude Test';
+        // Function to fetch attempt history
+        async function fetchAttemptHistory() {
+            try {
+                const response = await fetch(`/get_previous_attempts/{{ user_id }}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    attemptHistory = Array.isArray(data) ? data : [];
+                    updateAttemptHistory(attemptHistory);
+                } else {
+                    console.error('Failed to fetch attempt history');
                 }
-                
-                activityList.innerHTML += `
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="${activityIcon}"></i>
-                        </div>
-                        <div class="activity-content">
-                            <h4 class="activity-title">${activityType} Completed</h4>
-                            <p class="activity-desc">Scored ${attempt.overall_similarity || attempt.score || 'N/A'}%</p>
-                            <div class="activity-time">${formattedDate} at ${formattedTime}</div>
-                        </div>
-                    </li>
-                `;
-            });
+            } catch (error) {
+                console.error('Error fetching attempt history:', error);
+            }
         }
+        
+        // Function to update activity feed
+        // Function to update activity feed
+function updateAttemptHistory(attempts) {
+    const activityList = document.getElementById('activity-list');
+    activityList.innerHTML = '';
+    
+    if (attempts.length === 0) {
+        activityList.innerHTML = `
+            <li class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="activity-content">
+                    <h4 class="activity-title">No interviews yet</h4>
+                    <p class="activity-desc">Start your first interview to see activity here</p>
+                </div>
+            </li>
+        `;
+        return;
+    }
+    
+    // Sort attempts by date (newest first) and take latest 3
+    const recentAttempts = attempts
+        .sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time))
+        .slice(0, 3);
+    
+    recentAttempts.forEach(attempt => {
+        // Use the properly formatted dates from the backend
+        const formattedDate = attempt.date !== "Unknown Date" ? attempt.date : "Recent";
+        const formattedTime = attempt.time || "";
+        
+        let activityIcon = 'fas fa-check-circle';
+        let activityType = 'Theoretical Interview';
+        
+        if (attempt.interviewType === 'practical') {
+            activityIcon = 'fas fa-laptop-code';
+            activityType = 'Practical Coding';
+        } else if (attempt.interviewType === 'aptitude') {
+            activityIcon = 'fas fa-brain';
+            activityType = 'Aptitude Test';
+        } else if (attempt.interviewType === 'voice') {
+            activityIcon = 'fas fa-microphone';
+            activityType = 'Voice Interview';
+        }
+        
+        // Handle N/A percentage
+        const scoreDisplay = attempt.overallPercentage > 0 ? 
+            `${attempt.overallPercentage}%` : 'N/A %';
+        
+        activityList.innerHTML += `
+            <li class="activity-item">
+                <div class="activity-icon">
+                    <i class="${activityIcon}"></i>
+                </div>
+                <div class="activity-content">
+                    <h4 class="activity-title">${activityType} Completed</h4>
+                    <p class="activity-desc">Scored: ${scoreDisplay}</p>
+                    <div class="activity-time">${formattedDate}${formattedTime ? ' at ' + formattedTime : ''}</div>
+                </div>
+            </li>
+        `;
+    });
+}
         
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
@@ -917,6 +1089,7 @@
         
         // Initialize dashboard when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard initialized for user:', '{{ user_id }}');
             fetchUserData();
             fetchAttemptHistory();
             
@@ -927,21 +1100,16 @@
             }, 30000);
         });
 
+        // Additional attempt count fetch (keep this if needed elsewhere)
         document.addEventListener('DOMContentLoaded', function() {
-    const userId = '{{ user_id }}';  // Pass user_id from Jinja
-    fetch(`/get_total_attempts/${userId}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('total-attempts').textContent = data.total_attempts;  // Update the display element
-            // Optionally update other elements, e.g.:
-            // document.getElementById('avg-score').textContent = /* fetch from another endpoint if needed */;
-        })
-        .catch(error => console.error('Error fetching attempts:', error));
-});
-history.pushState(null, null, location.href);
-window.onpopstate = function() {
-    history.go(1);
-};
+            const userId = '{{ user_id }}';
+            fetch(`/get_total_attempts/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // This is handled in the main fetchUserData now
+                })
+                .catch(error => console.error('Error fetching attempts:', error));
+        });
     </script>
 </body>
 </html>
