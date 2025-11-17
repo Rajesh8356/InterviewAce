@@ -3948,9 +3948,14 @@ def get_skills_data(user_id):
         {"skill": "Flask", "count": 1}
     ]
 
-if __name__ == '__main__':
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    app.run(debug=True)
+import os
+from vercel_py import serve
+
+# Create upload folder during cold start
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Expose the Flask app to Vercel
+handler = serve(app)
 
 
