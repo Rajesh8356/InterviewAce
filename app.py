@@ -1369,6 +1369,67 @@ def generate_unique_user_id():
     conn.close()
     return user_id
 
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')  # Keep email for record, but don't verify
+        phone = request.form.get('phone')
+        password = request.form.get('password')
+
+        print(f"Processed data: name={name}, email={email}, phone={phone}")
+
+        if not all([name, phone, password]):
+            flash('Name, phone and password are required.', 'error')
+            return redirect(url_for('register'))
+
+        # Check phone verification instead of email
+        verified_phone = session.get('verified_phone')
+        if verified_phone != phone:
+            flash('Please verify your phone number first.', 'error')
+            return redirect(url_for('register'))
+
+        try:
+            # Generate unique user_id with LPxxxxx format
+            user_id = generate_unique_user_id()
+
+            # Store plain password (no hashing)
+            plain_password = password
+
+            # Insert into DB
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO details (name, email, user_id, password, phone)
+                VALUES (?, ?, ?, ?, ?)
+            """, (name, email, user_id, plain_password, phone))
+            conn.commit()
+            conn.close()
+
+            # Clear verification
+            session.pop('verified_phone', None)
+
+            # Render success page with user_id
+            return render_template('success.html', user_id=user_id)
+
+        except sqlite3.IntegrityError as e:
+            flash('Registration failed. Please try again.', 'error')
+            logger.error(f"DB IntegrityError during registration: {e}")
+        except Exception as e:
+            flash('Registration failed. Please try again.', 'error')
+            logger.error(f"Registration error: {e}")
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
+    # GET: Render the form
+    return render_template('third.html')
+
+
+
+'''
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -1424,7 +1485,7 @@ def register():
 
     # GET: Render the form
     return render_template('third.html')  # Your registration template
-'''
+
 @app.route('/verify-email-code', methods=['POST'])
 def verify_email_code():
     data = request.get_json()
@@ -4088,6 +4149,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
