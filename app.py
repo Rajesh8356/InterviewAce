@@ -307,6 +307,26 @@ def update_database_schema():
 # Call this function when your app starts
 update_database_schema()
 
+@app.route('/check-phone', methods=['GET'])
+def check_phone():
+    phone = request.args.get('phone')
+    
+    if not phone:
+        return jsonify({'exists': False})
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = "SELECT * FROM details WHERE phone = ?"
+        cursor.execute(query, (phone,))
+        existing_user = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({'exists': existing_user is not None})
+    except Exception as e:
+        print(f"Error checking phone: {str(e)}")
+        return jsonify({'exists': False})
+        
 @app.route('/check-email', methods=['GET'])
 def check_email():
     email = request.args.get('email')
@@ -327,6 +347,51 @@ def check_email():
         print(f"Error checking email: {str(e)}")
         return jsonify({'exists': False})
 
+
+# ================= SMS Sending Function ==================
+def send_sms(phone, message):
+    """Send SMS using Fast2SMS API"""
+    api_key = "CELR3Zg21VMUIiWy4rzqnS6fYBaxNdsHlOhpJ7DQ0GFKAbTPtkNKUbiwAG0YaTfsIBxmyV4nlqJugeCR"
+    url = "https://www.fast2sms.com/dev/bulkV2"
+
+    # Clean phone number - remove any non-digit characters
+    phone_clean = ''.join(filter(str.isdigit, str(phone)))
+    
+    # Properly format the payload
+    payload = {
+        'sender_id': 'LPOINT',
+        'message': message,
+        'language': 'english',
+        'route': 'q',
+        'numbers': phone_clean
+    }
+    
+    headers = {
+        'authorization': api_key,
+        'Content-Type': "application/x-www-form-urlencoded",
+        'Cache-Control': "no-cache",
+    }
+
+    try:
+        response = requests.post(url, data=payload, headers=headers)
+        print("📱 SMS Response:", response.text)  # Debug output
+        
+        # Parse response to check if successful
+        response_data = response.json()
+        
+        # Fast2SMS success response usually has return=True
+        if response_data.get('return', False):
+            return {'success': True, 'message_id': response_data.get('request_id')}
+        else:
+            error_msg = response_data.get('message', 'Unknown error')
+            print(f"❌ SMS failed: {error_msg}")
+            return {'success': False, 'error': error_msg}
+            
+    except Exception as e:
+        print(f"❌ SMS Error: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+'''
 @app.route('/send-verification-code', methods=['POST'])
 def send_verification_code():
     data = request.get_json()
@@ -381,6 +446,55 @@ def send_verification_code():
     except Exception as e:
         print(f"Error sending verification email: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
+'''
+
+
+sms_verification_codes = {}
+
+@app.route('/send-verification-code', methods=['POST'])
+def send_verification_code():
+    data = request.get_json()
+    phone = data.get('phone')
+    code = data.get('code')
+
+    if not phone or not code:
+        return jsonify({'success': False, 'error': 'Phone and code are required'})
+
+    try:
+        # Check if phone already exists
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = "SELECT * FROM details WHERE phone = ?"
+        cursor.execute(query, (phone,))
+        existing_user = cursor.fetchone()
+        conn.close()
+
+        if existing_user:
+            return jsonify({'success': False, 'error': 'Phone number already registered'})
+
+        # Store the verification code with timestamp
+        sms_verification_codes[phone] = {
+            'code': code,
+            'timestamp': time.time()
+        }
+
+        # Send SMS instead of email
+        message = f"Your verification code is: {code}. This code will expire in 1 minute."
+        sms_result = send_sms(phone, message)
+
+        if sms_result['success']:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': sms_result['error']})
+
+    except Exception as e:
+        print(f"Error sending verification SMS: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+
+
+
 @app.route('/logout')
 def logout():
     session.clear()  # Completely clear the session
@@ -3952,6 +4066,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
