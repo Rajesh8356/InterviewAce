@@ -1424,7 +1424,7 @@ def register():
 
     # GET: Render the form
     return render_template('third.html')  # Your registration template
-
+'''
 @app.route('/verify-email-code', methods=['POST'])
 def verify_email_code():
     data = request.get_json()
@@ -1445,6 +1445,28 @@ def verify_email_code():
     del email_verification_codes[email]
 
     return jsonify({'success': True})
+'''
+@app.route('/verify-phone-code', methods=['POST'])
+def verify_phone_code():
+    data = request.get_json()
+    phone = data.get('phone')
+    code = data.get('code')
+
+    if not phone or not code:
+        return jsonify({'success': False, 'error': 'Phone and code are required'})
+
+    # Check if code is valid and not expired (1 min = 60s)
+    stored = sms_verification_codes.get(phone)
+    if not stored or stored['code'] != code or (time.time() - stored['timestamp']) > 60:
+        return jsonify({'success': False, 'error': 'Invalid or expired code'})
+
+    # Mark as verified in session
+    session['verified_phone'] = phone
+    # Optional: Clear the code after verification
+    del sms_verification_codes[phone]
+
+    return jsonify({'success': True})
+
 
 @app.route('/four/<user_id>', methods=['GET', 'POST'])
 def four(user_id):
@@ -4066,6 +4088,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
