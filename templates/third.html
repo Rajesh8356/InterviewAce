@@ -622,7 +622,38 @@
   flex: 1;
   padding: 40px;
 }
+.phone-verified {
+    position: relative;
+}
 
+.phone-verified::after {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2ecc71;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.verify-phone-btn {
+    background: #2ecc71;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-top: 0.4rem;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.verify-phone-btn:hover {
+    background: #27ae60;
+    transform: translateY(-1px);
+}
     </style>
 </head>
 <body>
@@ -697,17 +728,16 @@
                         <label for="name">Full Name</label>
                     </div>
                     
-                    <div class="input-group" id="emailGroup">
-                        <input type="email" id="email" name="email" required placeholder=" " onblur="checkEmailExists()">
+                    <div class="input-group">
+                        <input type="email" id="email" name="email" required placeholder=" ">
                         <label for="email">Email Address</label>
-                        <div id="emailError" class="error-message"></div>
-                        <button type="button" id="verifyEmailBtn" class="verify-email-btn" onclick="sendVerificationCode()">Verify Email</button>
                     </div>
 
-                    <div class="input-group">
-                        <input type="text" id="phone" name="phone" required placeholder=" ">
+                    <div class="input-group" id="phoneGroup">
+                        <input type="text" id="phone" name="phone" required placeholder=" " onblur="checkPhoneExists()">
                         <label for="phone">Phone Number</label>
                         <div id="phoneError" class="error-message"></div>
+                        <button type="button" id="verifyPhoneBtn" class="verify-phone-btn" onclick="sendVerificationCode()">Verify Phone</button>
                     </div>
 
                     <div class="input-group">
@@ -725,9 +755,8 @@
     <!-- Verification Modal -->
     <div id="verificationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 1.5rem; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
-            <h2 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3rem;">Verify Your Email</h2>
-            <p style="color: #7f8c8d; margin-bottom: 1.2rem; font-size: 0.85rem;">We've sent a 4-digit code to your email. Please enter it below.</p>
-            
+          <h2 style="color: #2c3e50; margin-bottom: 0.8rem; font-size: 1.3rem;">Verify Your Phone</h2>
+            <p style="color: #7f8c8d; margin-bottom: 1.2rem; font-size: 0.85rem;">We've sent a 4-digit code to your phone. Please enter it below.</p>
             <div class="input-group">
                 <input type="text" id="verificationCode" name="verificationCode" placeholder=" " maxlength="4" style="text-align: center; font-size: 1.1rem; letter-spacing: 0.4rem;">
                 <label for="verificationCode">Verification Code</label>
@@ -782,7 +811,8 @@
     let verificationTimer;
     let timeLeft = 60;
     let verificationCode = '';
-    let emailToVerify = '';
+    //let emailToVerify = '';
+    let phoneToVerify = '';
     
     function validateForm() {
         const phone = document.getElementById('phone').value.trim();
@@ -799,13 +829,18 @@
 
         let isValid = true;
 
-        const emailInput = document.getElementById('email');
+       /* const emailInput = document.getElementById('email');
         if (!emailInput.classList.contains('email-verified')) {
             emailError.textContent = "Please verify your email first";
             emailError.style.display = "block";
             isValid = false;
-        }
-
+        }*/
+        const phoneInput = document.getElementById('phone');
+            if (!phoneInput.classList.contains('phone-verified')) {
+                phoneError.textContent = "Please verify your phone number first";
+                phoneError.style.display = "block";
+                isValid = false;
+            }
         if (!name) {
             alert("Please enter your full name");
             isValid = false;
@@ -842,7 +877,7 @@
 
         return isValid;
     }
-
+/*
     function checkEmailExists() {
         const email = document.getElementById('email').value.trim();
         const emailError = document.getElementById('emailError');
@@ -916,7 +951,117 @@
             alert('Failed to send verification code. Please try again.');
         });
     }
+    */
+
+  // Change from email to phone verification
+function checkPhoneExists() {
+    const phone = document.getElementById('phone').value.trim();
+    const phoneError = document.getElementById('phoneError');
+    const verifyBtn = document.getElementById('verifyPhoneBtn');
     
+    if (!phone) return;
+    
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+        phoneError.textContent = "Enter a valid 10-digit phone number starting with 6-9.";
+        phoneError.style.display = "block";
+        verifyBtn.style.display = "none";
+        return;
+    }
+    
+    // Check if phone exists (you might want to create this endpoint)
+    fetch(`/check-phone?phone=${encodeURIComponent(phone)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                phoneError.textContent = "This phone number is already registered";
+                phoneError.style.display = "block";
+                verifyBtn.style.display = "none";
+            } else {
+                phoneError.style.display = "none";
+                verifyBtn.style.display = "block";
+            }
+        })
+        .catch(error => {
+            console.error('Error checking phone:', error);
+        });
+}
+
+function sendVerificationCode() {
+    const phone = document.getElementById('phone').value.trim();
+    const phoneError = document.getElementById('phoneError');
+    
+    if (!phone) {
+        phoneError.textContent = "Please enter a phone number first";
+        phoneError.style.display = "block";
+        return;
+    }
+    
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+        phoneError.textContent = "Please enter a valid 10-digit phone number";
+        phoneError.style.display = "block";
+        return;
+    }
+    
+    phoneToVerify = phone;
+    document.getElementById('verificationModal').style.display = 'block';
+    verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    startTimer();
+    
+    fetch('/send-verification-code', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({phone: phone, code: verificationCode})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Failed to send verification code. Please try again.');
+            if (data.error === 'Phone number already registered') {
+                phoneError.textContent = "This phone number is already registered";
+                phoneError.style.display = "block";
+                document.getElementById('verifyPhoneBtn').style.display = "none";
+                closeVerificationModal();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to send verification code. Please try again.');
+    });
+}
+
+function verifyCode() {
+    const enteredCode = document.getElementById('verificationCode').value.trim();
+    const codeError = document.getElementById('codeError');
+
+    fetch('/verify-phone-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({phone: phoneToVerify, code: enteredCode})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            codeError.style.display = "none";
+            const phoneInput = document.getElementById('phone');
+            phoneInput.classList.add('phone-verified');
+            document.getElementById('verifyPhoneBtn').style.display = 'none';
+            closeVerificationModal();
+            clearInterval(verificationTimer);
+            alert("✅ Phone verified successfully!");
+        } else {
+            codeError.textContent = "Invalid verification code";
+            codeError.style.display = "block";
+        }
+    })
+    .catch(err => {
+        console.error("Error verifying code:", err);
+        codeError.textContent = "Server error. Please try again.";
+        codeError.style.display = "block";
+    });
+}  
     function startTimer() {
         timeLeft = 60;
         updateTimerDisplay();
@@ -953,7 +1098,7 @@
         sendVerificationCode();
     }
     
-    function verifyCode() {
+  /*  function verifyCode() {
         const enteredCode = document.getElementById('verificationCode').value.trim();
         const codeError = document.getElementById('codeError');
 
@@ -983,7 +1128,7 @@
             codeError.style.display = "block";
         });
     }
-
+*/
     function closeVerificationModal() {
         document.getElementById('verificationModal').style.display = 'none';
         document.getElementById('verificationCode').value = '';
