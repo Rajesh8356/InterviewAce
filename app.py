@@ -115,11 +115,11 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Directory to store CSV files
-CSV_FOLDER = r"F:/INTERNSHIP - IV SEM/interview_15-09-2025/project5_interview/output_csv"
+CSV_FOLDER = "output_csv"
 os.makedirs(CSV_FOLDER, exist_ok=True)
 
 # Directory to store captured images
-IMAGE_FOLDER = r"F:/INTERNSHIP - IV SEM/interview_15-09-2025/project5_interview/images"
+IMAGE_FOLDER = "images"
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 
 # Face recognition setup
@@ -3952,6 +3952,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
