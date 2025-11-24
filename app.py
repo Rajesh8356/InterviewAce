@@ -3616,11 +3616,57 @@ def end_interview():
             "UPDATE interview_attempts SET interview_type = 'voice' WHERE user_id = ? AND attempt_number = ?",
             (user_id, attempt_number)
         )
+         # === ADD THIS SECTION RIGHT HERE ===
+        # Store results in database for download access
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS temp_voice_results (
+                user_id TEXT PRIMARY KEY,
+                results_data TEXT,
+                total_score INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Store as JSON
+        import json
+        results_json = json.dumps(results)
+
+        cursor.execute("""
+            INSERT OR REPLACE INTO temp_voice_results (user_id, results_data, total_score)
+            VALUES (?, ?, ?)
+        """, (user_id, results_json, total_score))
+        # === END OF ADDED SECTION ===
+        
         conn.commit()
         conn.close()
 
         # Generate PDF with results
         pdf_filename = generate_voice_results_pdf(user_id, results, total_score)
+
+        # Clear interview-specific session data but keep user_id for results page
+        interview_keys = ['all_questions', 'answers', 'question_count', 'resume_text',
+                         'user_name', 'interview_started', 'asked_questions', 'current_round', 'used_keywords']
+        for key in interview_keys:
+            session.pop(key, None)
+
+        session.modified = True
+
+        return jsonify({
+            'success': True,
+            'redirect_url': url_for('voice_results'),
+        })
+
+    except Exception as e:
+        logger.error(f"Error ending interview: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+        conn.commit()
+        conn.close()
+
+        # Generate PDF with results
+        #pdf_filename = generate_voice_results_pdf(user_id, results, total_score)
 
         # Get user email from database
         #conn = sqlite3.connect('reg.db')
@@ -3636,25 +3682,7 @@ def end_interview():
            # email_sent = send_voice_results_email(user['email'], pdf_filename, user_id, total_score, len(results))
 
         # Clear interview-specific session data but keep user_id for results page
-        interview_keys = ['all_questions', 'answers', 'question_count', 'resume_text',
-                         'user_name', 'interview_started', 'asked_questions', 'current_round', 'used_keywords']
-        for key in interview_keys:
-            session.pop(key, None)
-
-        session.modified = True
-
-        return jsonify({
-            'success': True,
-            'redirect_url': url_for('voice_results'),
-          #  'email_sent': email_sent
-        })
-
-    except Exception as e:
-        logger.error(f"Error ending interview: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+       
 
 def recognize_speech_from_mic():
     # Initialize the recognizer
@@ -4347,9 +4375,25 @@ def get_analysis_data(user_id):
 @app.route('/download_voice_results/<user_id>')
 def download_voice_results(user_id):
     try:
-        # Get the results data from session
+        # Try to get from session first
         evaluated_answers = session.get('evaluated_answers', [])
         total_score = session.get('total_score', 0)
+        
+        # If session data is empty, try to get from database
+        if not evaluated_answers:
+            conn = sqlite3.connect('reg.db')
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT results_data, total_score FROM temp_voice_results 
+                WHERE user_id = ? AND created_at > datetime('now', '-1 hour')
+            """, (user_id,))
+            result = cursor.fetchone()
+            conn.close()
+            
+            if result:
+                import json
+                evaluated_answers = json.loads(result[0])
+                total_score = result[1]
         
         if not evaluated_answers:
             flash("No results available to download. Please complete an interview first.")
@@ -4370,7 +4414,7 @@ def download_voice_results(user_id):
         logger.error(f"Error downloading voice results: {str(e)}")
         flash("Error downloading results. Please try again.")
         return redirect(url_for('voice_results'))
-
+        
 
 @app.route('/download_scorecard/<user_id>')
 def download_scorecard(user_id):
@@ -4492,6 +4536,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
