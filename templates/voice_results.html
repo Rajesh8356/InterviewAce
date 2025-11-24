@@ -109,6 +109,10 @@
               text-decoration: none; border-radius: 6px; font-weight: 600;">
         View Scorecard
       </a>
+       <a href="{{ url_for('both', user_id=session.get('user_id', '')) }}" style="display: inline-block; background: #4f46e5; color: white; padding: 10px 20px; 
+              text-decoration: none; border-radius: 6px; font-weight: 600; margin-left: 10px;">
+    ← Back to Dashboard
+</a>
     </div>
   </div>
 
