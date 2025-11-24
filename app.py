@@ -1314,33 +1314,34 @@ def cleanup_attempts(user_id):
 def home():
     return render_template('Home.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user_id = request.form.get('user_id')  # From form
+        phone = request.form.get('phone')  # From form
         password = request.form.get('password')
 
-        print(f"Login attempt: user_id={user_id}, password provided={bool(password)}")  # Debug
+        print(f"Login attempt: phone ={phone}, password provided={bool(password)}")  # Debug
 
-        if not user_id or not password:
-            flash('User ID and password are required.', 'error')
+        if not phone or not password:
+            flash('Phone number and password are required.', 'error')
             return redirect(url_for('login'))
 
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT password FROM details WHERE user_id = ?", (user_id,))
+            cursor.execute("SELECT user_id, password FROM details WHERE phone = ?", (phone,))
             user = cursor.fetchone()
             conn.close()
 
             if user and user['password'] == password:
-                session['user_id'] = user_id
+                session['user_id'] = user['user_id']
+                session['phone'] = phone
                 flash('Login successful! Welcome back.', 'success')
-                return redirect(url_for('both', user_id=user_id))  # To dashboard or home
+                return redirect(url_for('both', user_id=user['user_id']))  # To dashboard or home
             else:
                 flash('Invalid User ID or password. Please try again.', 'error')
-                logger.error(f"Login failed for user_id: {user_id} - User exists: {user is not None}, Password match: {user['password'] == password if user else False}")
-
+                logger.error(f"Login failed for phone: {phone} - User exists: {user is not None}, Password match: {user['password'] == password if user else False}")
         except Exception as e:
             flash('Login failed. Please try again.', 'error')
             logger.error(f"Login error: {e}")
@@ -1348,7 +1349,6 @@ def login():
     # GET: Render login form
     return render_template('sec.html')  # Your login template (sec.html from docs)
     
-
 @app.route('/remove_skill/<user_id>', methods=['POST'])
 def remove_skill(user_id):
     data = request.get_json()
@@ -4200,6 +4200,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
