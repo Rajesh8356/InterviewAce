@@ -439,7 +439,8 @@ const stopRecording = () => {
     const verificationStatus = document.getElementById("verificationStatus");
     const debugPanel = document.getElementById("debugPanel");
     const listeningIndicator = document.getElementById("listeningIndicator");
-
+// Add user_id variable (make sure this is passed from Flask template)
+const userId = '{{ user_id }}'; // This should be set by your Flask template
     // Initialize everything when page loads
     window.addEventListener('load', () => {
       initializeWebcam();
@@ -575,9 +576,11 @@ const stopRecording = () => {
       totalTime--;
       
       // End interview when time reaches 0
+          
       if (totalTime <= 0) {
-        clearInterval(countdownInterval);
-        endInterview();
+          clearInterval(countdownInterval);
+          addEntry("Bot", "Time's up! The interview has ended automatically.");
+          endInterview();
       }
     }
 
@@ -766,67 +769,55 @@ const stopRecording = () => {
     }
 
     // End interview
-     async function endInterview() {
-        if (isInterviewEnding) return;
-        isInterviewEnding = true;
+async function endInterview() {
+    if (isInterviewEnding) return;
+    isInterviewEnding = true;
+    
+    try {
+        // Show loading state
+        endBtn.disabled = true;
+        endBtn.textContent = 'Processing Results...';
         
-        try {
-            // Immediately stop all ongoing processes
-            window.speechSynthesis.cancel();
+        // Add final message to transcript
+        addEntry("Bot", "Interview completed. Processing your results...");
+        
+        // Call backend to end interview
+        const response = await fetch('/end_interview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                session_id: session_id,
+                user_id: '{{ user_id }}' // Make sure this is passed from Flask
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Success - redirect to results page
+            debug("Interview ended successfully, redirecting to results...");
+            window.location.href = data.redirect_url;
+        } else {
+            // Error handling
+            debug("Error ending interview: " + (data.error || 'Unknown error'));
+            alert('Error ending interview: ' + (data.error || 'Please try again.'));
             
-            if (recognition) {
-                try { 
-                    recognition.stop(); 
-                    recognitionActive = false;
-                } catch(e) {}
-            }
-            
-            // Stop face verification and timers
-            clearInterval(faceVerificationInterval);
-            clearInterval(countdownInterval);
-            clearTimeout(answerTimeout);
-            
-            // Stop webcam stream
-            if (video.srcObject) {
-                const tracks = video.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
-            }
-            
-            // Show loading state
-            document.getElementById('endBtn').disabled = true;
-            document.getElementById('endBtn').textContent = 'Processing...';
-            
-            // Call backend to end interview
-            const response = await fetch('/end_interview', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.email_sent) {
-                    alert('Interview completed! Results have been sent to your email.');
-                } else {
-                    alert('Interview completed! Results could not be emailed.');
-                }
-                // Redirect to results page
-                window.location.href = data.redirect_url;
-            } else {
-                alert('Error ending interview: ' + (data.error || 'Unknown error'));
-                document.getElementById('endBtn').disabled = false;
-                document.getElementById('endBtn').textContent = 'End Interview';
-                isInterviewEnding = false;
-            }
-        } catch (error) {
-            console.error('Error ending interview:', error);
-            debug('Error ending interview: ' + error.message);
-            alert('Failed to end interview. Please try again.');
-            document.getElementById('endBtn').disabled = false;
-            document.getElementById('endBtn').textContent = 'End Interview';
+            // Reset button state
+            endBtn.disabled = false;
+            endBtn.textContent = 'End Interview';
             isInterviewEnding = false;
         }
+    } catch (error) {
+        console.error('Error ending interview:', error);
+        debug('Error ending interview: ' + error.message);
+        alert('Network error ending interview. Please check your connection and try again.');
+        
+        // Reset button state
+        endBtn.disabled = false;
+        endBtn.textContent = 'End Interview';
+        isInterviewEnding = false;
     }
+}
 
     // Transcript management
     function addEntry(speaker, text) {
@@ -930,26 +921,39 @@ const stopRecording = () => {
       listeningIndicator.style.display = 'none';
     }
 
-    // Event listeners
-     endBtn.addEventListener("click", () => {
-        // Immediately stop all processes without waiting
-        window.speechSynthesis.cancel();
-        if (recognition) {
-            try { recognition.stop(); } catch(e) {}
-        }
-        clearInterval(faceVerificationInterval);
-        clearInterval(countdownInterval);
-        clearTimeout(answerTimeout);
-        
-        // Stop webcam
-        if (video.srcObject) {
-            const tracks = video.srcObject.getTracks();
-            tracks.forEach(track => track.stop());
-        }
-        
-        // Then proceed with ending the interview
-        endInterview();
-    });
+   // Event listeners
+endBtn.addEventListener("click", async () => {
+    if (isInterviewEnding) return;
+    
+    // Show confirmation dialog
+    const confirmed = confirm("Are you sure you want to end the interview? This action cannot be undone.");
+    if (!confirmed) return;
+    
+    // Immediately stop all processes
+    window.speechSynthesis.cancel();
+    if (recognition) {
+        try { 
+            recognition.stop(); 
+            recognitionActive = false;
+        } catch(e) {}
+    }
+    clearInterval(faceVerificationInterval);
+    clearInterval(countdownInterval);
+    clearTimeout(answerTimeout);
+    
+    // Stop webcam
+    if (video.srcObject) {
+        const tracks = video.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+    }
+    
+    // Update button state
+    endBtn.disabled = true;
+    endBtn.textContent = 'Ending Interview...';
+    
+    // Proceed with ending the interview
+    await endInterview();
+});
 history.pushState(null, null, location.href);
 window.onpopstate = function() {
     history.go(1);
