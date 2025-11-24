@@ -3646,7 +3646,7 @@ def end_interview():
         return jsonify({
             'success': True,
             'redirect_url': url_for('voice_results'),
-            'email_sent': email_sent
+          #  'email_sent': email_sent
         })
 
     except Exception as e:
