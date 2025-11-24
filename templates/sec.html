@@ -14,13 +14,13 @@
         }
 
         body, html {
-    height: 100%;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)),
-                url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") no-repeat center center fixed;
-    background-size: cover;
-    overflow-x: hidden;
-}
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)),
+                        url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d") no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+        }
 
         /* Animated Background with Particles */
         .background-animation {
@@ -621,6 +621,46 @@
                 border-radius: 15px;
             }
         }
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        #resendLink.disabled {
+            color: #95a5a6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .success-message-modal {
+            color: #2ecc71;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -646,9 +686,8 @@
            
             <div class="nav-buttons">
                 <a href="/" class="btn btn-primary">Home</a>
-          
-            <a href="/login" class="btn btn-primary">Sign In</a>
-            <a href="/register" class="btn btn-outline">Get Started</a>
+                <a href="/login" class="btn btn-primary">Sign In</a>
+                <a href="/register" class="btn btn-outline">Get Started</a>
             </div>
             <div class="hamburger" onclick="toggleMobileMenu()">
                 <span></span>
@@ -658,7 +697,6 @@
         </div>
         <div class="mobile-menu" id="mobileMenu">
             <a href="/" class="btn btn-primary">Home</a>
-          
             <a href="/login" class="btn btn-primary">Sign In</a>
             <a href="/register" class="btn btn-outline">Get Started</a>
         </div>
@@ -686,54 +724,79 @@
                     <label for="forgotIdEmail">Email Address</label>
                 </div>
                 <button class="btn btn-primary" onclick="sendUserId()">Send User ID</button>
+                <div id="forgotIdError" class="error-message"></div>
             </div>
             <div class="modal-step" id="forgotIdStep2">
-                <p style="color: #2ecc71;">Your User ID has been sent to your email address.</p>
+                <p class="success-message-modal">Your User ID has been sent to your email address.</p>
                 <button class="btn btn-primary" onclick="closeModal('forgotIdModal')">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
+    <!-- Forgot Password Modal (Phone-Based) -->
     <div class="modal-overlay" id="forgotPasswordModal">
         <div class="modal">
             <button class="modal-close" onclick="closeModal('forgotPasswordModal')">&times;</button>
-            <h3>Forgot Password</h3>
+            <h3>Reset Your Password</h3>
             
+            <!-- Step 1: Enter Phone Number -->
             <div class="modal-step active" id="forgotPasswordStep1">
-                <p>Enter your User ID to reset your password.</p>
+                <p>Enter your registered phone number to receive a verification code.</p>
                 <div class="input-group">
-                    <input type="text" id="forgotPasswordUserId" placeholder=" " required>
-                    <label for="forgotPasswordUserId">User ID</label>
+                    <input type="tel" id="forgotPasswordPhone" placeholder=" " required 
+                           pattern="[0-9]{10}" title="Please enter a 10-digit phone number">
+                    <label for="forgotPasswordPhone">Phone Number</label>
                 </div>
-                <button class="btn btn-primary" onclick="sendPasswordResetCode()">Send Verification Code</button>
+                <button class="btn btn-primary" onclick="sendPasswordResetCodePhone()">Send Verification Code</button>
+                <div id="forgotPasswordError1" class="error-message"></div>
             </div>
             
+            <!-- Step 2: Verify Phone Code -->
             <div class="modal-step" id="forgotPasswordStep2">
-                <p>Enter the verification code sent to your email.</p>
+                <p>Enter the 6-digit verification code sent to your phone number.</p>
                 <div class="input-group">
-                    <input type="text" id="resetCode" placeholder=" " maxlength="6" required>
+                    <input type="text" id="resetCode" placeholder=" " maxlength="6" required 
+                           style="text-align: center; font-size: 1.1rem; letter-spacing: 0.3rem;">
                     <label for="resetCode">Verification Code</label>
                 </div>
-                <button class="btn btn-primary" onclick="verifyResetCode()">Verify Code</button>
+                <div id="resetTimer" style="color: #e74c3c; margin: 0.5rem 0; text-align: center; font-weight: 500; font-size: 0.9rem;">
+                    Code expires in: 10:00
+                </div>
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <a href="javascript:void(0)" onclick="resendPasswordResetCodePhone()" id="resendLink" 
+                       style="color: #667eea; text-decoration: none; font-size: 0.85rem;">Resend Code</a>
+                </div>
+                <button class="btn btn-primary" onclick="verifyResetCodePhone()">Verify Code</button>
+                <button class="btn btn-outline" onclick="goToForgotStep(1)" style="margin-top: 0.5rem; width: 100%;">Back</button>
+                <div id="forgotPasswordError2" class="error-message"></div>
             </div>
             
+            <!-- Step 3: New Password -->
             <div class="modal-step" id="forgotPasswordStep3">
                 <p>Create a new password for your account.</p>
                 <div class="input-group">
-                    <input type="password" id="newPassword" placeholder=" " required>
+                    <input type="password" id="newPassword" placeholder=" " required minlength="6">
                     <label for="newPassword">New Password</label>
                 </div>
+                <div id="passwordStrength" style="font-size: 0.8rem; margin: -0.5rem 0 1rem 0;"></div>
                 <div class="input-group">
                     <input type="password" id="confirmPassword" placeholder=" " required>
                     <label for="confirmPassword">Confirm Password</label>
                 </div>
-                <button class="btn btn-primary" onclick="resetPassword()">Reset Password</button>
+                <div id="passwordMatch" style="font-size: 0.8rem; margin: -0.5rem 0 1rem 0;"></div>
+                <button class="btn btn-primary" onclick="resetPasswordPhone()">Reset Password</button>
+                <button class="btn btn-outline" onclick="goToForgotStep(2)" style="margin-top: 0.5rem; width: 100%;">Back</button>
+                <div id="forgotPasswordError3" class="error-message"></div>
             </div>
             
+            <!-- Step 4: Success -->
             <div class="modal-step" id="forgotPasswordStep4">
-                <p style="color: #2ecc71;">Your password has been successfully reset.</p>
-                <button class="btn btn-primary" onclick="closeModal('forgotPasswordModal')">Close</button>
+                <div style="text-align: center;">
+                    <div style="font-size: 48px; color: #2ecc71; margin-bottom: 1rem;">✓</div>
+                    <h3 style="color: #2ecc71; margin-bottom: 1rem;">Password Reset Successful!</h3>
+                    <p style="color: #7f8c8d; margin-bottom: 1.5rem;">Your password has been successfully reset. You can now login with your new password.</p>
+                    <button class="btn btn-primary" onclick="closeModal('forgotPasswordModal')">Continue to Login</button>
+                </div>
             </div>
         </div>
     </div>
@@ -748,8 +811,8 @@
             
             <form action="/login" method="post">
                 <div class="input-group">
-                    <input type="text" id="user_id" name="user_id" required placeholder=" ">
-                    <label for="user_id">User ID</label>
+                    <input type="tel" id="phone" name="phone" required placeholder=" " pattern="[0-9]{10}">
+        <label for="phone">Phone Number</label>
                 </div>
                 <div class="input-group">
                     <input type="password" id="password" name="password" required placeholder=" ">
@@ -757,9 +820,9 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Sign In</button>
             </form>
-            
+        
             <div class="forgot-links">
-                <a href="#" onclick="openModal('forgotIdModal')">Forgot User ID?</a>
+             <!--  <a href="#" onclick="openModal('forgotIdModal')">Forgot User ID?</a>--> 
                 <a href="#" onclick="openModal('forgotPasswordModal')">Forgot Password?</a>
             </div>
             
@@ -808,7 +871,48 @@
             },
             retina_detect: true
         });
+// Real-time phone validation
+document.getElementById('phone')?.addEventListener('input', function(e) {
+    const phone = this.value.replace(/\D/g, ''); // Remove non-digits
+    this.value = phone.slice(0, 10); // Limit to 10 digits
+    
+    // Add visual feedback
+    if (phone.length === 10) {
+        this.style.borderColor = '#2ecc71';
+    } else {
+        this.style.borderColor = '#e1e8ed';
+    }
+});
 
+// Form submission validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    
+    if (!phone || !password) {
+        e.preventDefault();
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    if (phone.length !== 10) {
+        e.preventDefault();
+        alert('Please enter a valid 10-digit phone number');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
+    
+    // Re-enable button after 3 seconds in case of error
+    setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }, 3000);
+});
         // Mobile menu toggle
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
@@ -859,6 +963,7 @@
         // Modal functions
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'flex';
+            clearErrors();
         }
 
         function closeModal(modalId) {
@@ -868,25 +973,52 @@
                 document.getElementById('forgotIdStep2').classList.remove('active');
                 document.getElementById('forgotIdEmail').value = '';
             } else if (modalId === 'forgotPasswordModal') {
-                document.getElementById('forgotPasswordStep1').classList.add('active');
-                document.getElementById('forgotPasswordStep2').classList.remove('active');
-                document.getElementById('forgotPasswordStep3').classList.remove('active');
-                document.getElementById('forgotPasswordStep4').classList.remove('active');
-                document.getElementById('forgotPasswordUserId').value = '';
+                // Reset forgot password flow
+                goToForgotStep(1);
+                clearInterval(resetTimerInterval);
+                document.getElementById('forgotPasswordPhone').value = '';
                 document.getElementById('resetCode').value = '';
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmPassword').value = '';
+                resetPhone = '';
+                resetUserId = '';
+            }
+        }
+
+        function clearErrors() {
+            // Clear all error messages
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+            });
+        }
+
+        function showError(step, message) {
+            const errorElement = document.getElementById(`forgotPasswordError${step}`);
+            if (errorElement) {
+                errorElement.textContent = message;
             }
         }
 
         // Forgot User ID functions
         function sendUserId() {
             const email = document.getElementById('forgotIdEmail').value.trim();
+            const errorElement = document.getElementById('forgotIdError');
             
             if (!email) {
-                alert('Please enter your email address');
+                errorElement.textContent = 'Please enter your email address';
                 return;
             }
+            
+            if (!validateEmail(email)) {
+                errorElement.textContent = 'Please enter a valid email address';
+                return;
+            }
+            
+            const btn = document.querySelector('#forgotIdStep1 .btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            errorElement.textContent = '';
             
             fetch('/forgot-userid', {
                 method: 'POST',
@@ -899,99 +1031,346 @@
                     document.getElementById('forgotIdStep1').classList.remove('active');
                     document.getElementById('forgotIdStep2').classList.add('active');
                 } else {
-                    alert(data.error || 'Failed to send User ID');
+                    errorElement.textContent = data.error || 'Failed to send User ID';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to send User ID. Please try again.');
+                errorElement.textContent = 'Failed to send User ID. Please try again.';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
             });
         }
 
-        // Forgot Password functions
+        // ========== FORGOT PASSWORD WITH PHONE NUMBER ==========
+        
+        // Forgot Password variables
+        let resetPhone = '';
         let resetUserId = '';
-        let resetCode = '';
+        let resetTimerInterval;
+        let resetTimeLeft = 600; // 10 minutes
 
-        function sendPasswordResetCode() {
-            const userId = document.getElementById('forgotPasswordUserId').value.trim();
+        // Navigation between steps
+        function goToForgotStep(step) {
+            // Hide all steps
+            document.querySelectorAll('#forgotPasswordModal .modal-step').forEach(stepEl => {
+                stepEl.classList.remove('active');
+            });
             
-            if (!userId) {
-                alert('Please enter your User ID');
+            // Show current step
+            document.getElementById(`forgotPasswordStep${step}`).classList.add('active');
+            clearErrors();
+        }
+
+        // Send password reset code via SMS using phone number
+      function sendPasswordResetCodePhone() {
+    const phone = document.getElementById('forgotPasswordPhone').value.trim();
+    
+    if (!phone) {
+        showError(1, 'Please enter your phone number');
+        return;
+    }
+    
+    // Basic phone validation
+    if (!/^\d{10}$/.test(phone)) {
+        showError(1, 'Please enter a valid 10-digit phone number');
+        return;
+    }
+    
+    const btn = document.querySelector('#forgotPasswordStep1 .btn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    showError(1, '');
+    
+    // Directly send the verification code without checking phone first
+    fetch('/send-password-reset-code-phone', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ phone: phone })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resetPhone = phone;
+            resetUserId = data.user_id;
+            startResetTimer();
+            goToForgotStep(2);
+        } else {
+            showError(1, data.error || 'Failed to send verification code');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError(1, 'Failed to send verification code. Please try again.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    });
+}
+        // Verify the reset code using phone
+        function verifyResetCodePhone() {
+            const enteredCode = document.getElementById('resetCode').value.trim();
+            
+            if (!enteredCode) {
+                showError(2, 'Please enter the verification code');
                 return;
             }
             
-            fetch('/send-password-reset-code', {
+            if (enteredCode.length !== 6) {
+                showError(2, 'Please enter 6-digit code');
+                return;
+            }
+            
+            const btn = document.querySelector('#forgotPasswordStep2 .btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            showError(2, '');
+            
+            fetch('/verify-password-reset-code-phone', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: userId })
+                body: JSON.stringify({ 
+                    phone: resetPhone, 
+                    code: enteredCode 
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    resetUserId = userId;
-                    resetCode = data.code;
-                    document.getElementById('forgotPasswordStep1').classList.remove('active');
-                    document.getElementById('forgotPasswordStep2').classList.add('active');
+                    clearInterval(resetTimerInterval);
+                    resetUserId = data.user_id;
+                    goToForgotStep(3);
                 } else {
-                    alert(data.error || 'Failed to send verification code');
+                    showError(2, data.error || 'Invalid verification code');
+                // Clear the input field on error
+                    document.getElementById('resetCode').value = '';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to send verification code. Please try again.');
+                showError(2, 'Failed to verify code. Please try again.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
             });
         }
 
-        function verifyResetCode() {
-            const enteredCode = document.getElementById('resetCode').value.trim();
-            
-            if (!enteredCode) {
-                alert('Please enter the verification code');
-                return;
-            }
-            
-            if (enteredCode === resetCode) {
-                document.getElementById('forgotPasswordStep2').classList.remove('active');
-                document.getElementById('forgotPasswordStep3').classList.add('active');
-            } else {
-                alert('Invalid verification code');
-            }
-        }
-
-        function resetPassword() {
+        // Reset password using phone verification
+        function resetPasswordPhone() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
             if (!newPassword || !confirmPassword) {
-                alert('Please enter and confirm your new password');
+                showError(3, 'Please enter and confirm your new password');
                 return;
             }
             
             if (newPassword !== confirmPassword) {
-                alert('Passwords do not match');
+                showError(3, 'Passwords do not match');
                 return;
             }
             
-            fetch('/reset-password', {
+            if (newPassword.length < 6) {
+                showError(3, 'Password must be at least 6 characters long');
+                return;
+            }
+            
+            const btn = document.querySelector('#forgotPasswordStep3 .btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Resetting...';
+            showError(3, '');
+            
+            fetch('/reset-password-phone', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: resetUserId, new_password: newPassword })
+                body: JSON.stringify({ 
+                    user_id: resetUserId, 
+                    new_password: newPassword 
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('forgotPasswordStep3').classList.remove('active');
-                    document.getElementById('forgotPasswordStep4').classList.add('active');
+                    goToForgotStep(4);
                 } else {
-                    alert(data.error || 'Failed to reset password');
+                    showError(3, data.error || 'Failed to reset password');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to reset password. Please try again.');
+                showError(3, 'Failed to reset password. Please try again.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
             });
         }
 
+        // Resend verification code using phone
+        function resendPasswordResetCodePhone() {
+            if (resetTimeLeft > 0) {
+                showError(2, 'Please wait for the current code to expire before requesting a new one');
+                return;
+            }
+
+            const resendLink = document.getElementById('resendLink');
+            resendLink.textContent = 'Resending...';
+            resendLink.style.pointerEvents = 'none';
+            showError(2, '');
+
+            fetch('/send-password-reset-code-phone', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ phone: resetPhone })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    startResetTimer();
+                    resendLink.textContent = 'Resend Code';
+                    resendLink.style.pointerEvents = 'none';
+                    showError(2, 'New verification code sent successfully!');
+                    setTimeout(() => showError(2, ''), 3000);
+                } else {
+                    showError(2, 'Failed to resend code: ' + (data.error || 'Unknown error'));
+                    resendLink.textContent = 'Resend Code';
+                    resendLink.style.pointerEvents = 'auto';
+                }
+            })
+            .catch(error => {
+                showError(2, 'Network error. Please try again.');
+                resendLink.textContent = 'Resend Code';
+                resendLink.style.pointerEvents = 'auto';
+            });
+        }
+
+        // Start countdown timer
+        function startResetTimer() {
+            resetTimeLeft = 600;
+            updateResetTimerDisplay();
+            
+            clearInterval(resetTimerInterval);
+            resetTimerInterval = setInterval(() => {
+                resetTimeLeft--;
+                updateResetTimerDisplay();
+                
+                if (resetTimeLeft <= 0) {
+                    clearInterval(resetTimerInterval);
+                    document.getElementById('resendLink').classList.remove('disabled');
+                    document.getElementById('resendLink').style.pointerEvents = 'auto';
+                }
+            }, 1000);
+        }
+
+        function updateResetTimerDisplay() {
+            const minutes = Math.floor(resetTimeLeft / 60);
+            const seconds = resetTimeLeft % 60;
+            document.getElementById('resetTimer').textContent = 
+                `Code expires in: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (resetTimeLeft <= 0) {
+                document.getElementById('resetTimer').textContent = 'Code has expired';
+                document.getElementById('resetTimer').style.color = '#e74c3c';
+            } else {
+                document.getElementById('resetTimer').style.color = '#e74c3c';
+            }
+        }
+
+        // ========== VALIDATION FUNCTIONS ==========
+        
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // ========== ENTER KEY SUPPORT ==========
+        
+        // Add Enter key support for forgot password modal
+        document.addEventListener('keypress', function(event) {
+            const forgotModal = document.getElementById('forgotPasswordModal');
+            if (forgotModal.style.display !== 'flex') return;
+            
+            if (event.key === 'Enter') {
+                const activeStep = document.querySelector('#forgotPasswordModal .modal-step.active');
+                if (activeStep.id === 'forgotPasswordStep1') {
+                    sendPasswordResetCodePhone();
+                } else if (activeStep.id === 'forgotPasswordStep2') {
+                    verifyResetCodePhone();
+                } else if (activeStep.id === 'forgotPasswordStep3') {
+                    resetPasswordPhone();
+                }
+            }
+        });
+
+        // Auto-advance to verification when 6 digits are entered
+        document.getElementById('resetCode')?.addEventListener('input', function(e) {
+            if (this.value.length === 6) {
+                verifyResetCodePhone();
+            }
+        });
+
+        // ========== FORM VALIDATION ==========
+        
+        // Real-time phone number validation
+        document.getElementById('forgotPasswordPhone')?.addEventListener('input', function(e) {
+            const phone = this.value.replace(/\D/g, ''); // Remove non-digits
+            this.value = phone.slice(0, 10); // Limit to 10 digits
+            
+            // Add visual feedback
+            if (phone.length === 10) {
+                this.style.borderColor = '#2ecc71';
+            } else {
+                this.style.borderColor = '#e1e8ed';
+            }
+        });
+
+        // Password strength indicator
+        document.getElementById('newPassword')?.addEventListener('input', function(e) {
+            const password = this.value;
+            const strengthIndicator = document.getElementById('passwordStrength');
+            
+            let strength = 'Weak';
+            let color = '#e74c3c';
+            
+            if (password.length >= 8) {
+                strength = 'Medium';
+                color = '#f39c12';
+            }
+            if (password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) {
+                strength = 'Strong';
+                color = '#2ecc71';
+            }
+            
+            strengthIndicator.innerHTML = 
+                `Password strength: <span style="color: ${color}; font-weight: bold;">${strength}</span>`;
+        });
+
+        // Confirm password validation
+        document.getElementById('confirmPassword')?.addEventListener('input', function(e) {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = this.value;
+            const matchIndicator = document.getElementById('passwordMatch');
+            
+            if (confirmPassword === '') {
+                matchIndicator.innerHTML = '';
+            } else if (newPassword === confirmPassword) {
+                matchIndicator.innerHTML = 
+                    '<span style="color: #2ecc71; font-weight: bold;">✓ Passwords match</span>';
+            } else {
+                matchIndicator.innerHTML = 
+                    '<span style="color: #e74c3c; font-weight: bold;">✗ Passwords do not match</span>';
+            }
+        });
+
+        // ========== UTILITY FUNCTIONS ==========
+        
         // Close modals when clicking outside
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
             overlay.addEventListener('click', (e) => {
@@ -1006,6 +1385,65 @@
         window.onpopstate = function() {
             history.go(1);
         };
+
+        // Form submission handler
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const userId = document.getElementById('user_id').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!userId || !password) {
+                e.preventDefault();
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+            
+            // Re-enable button after 3 seconds in case of error
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }, 3000);
+        });
+
+        // Auto-focus on first input when modal opens
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalObserver = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const modal = mutation.target;
+                        if (modal.style.display === 'flex') {
+                            const firstInput = modal.querySelector('input');
+                            if (firstInput) {
+                                setTimeout(() => firstInput.focus(), 300);
+                            }
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modalObserver.observe(modal, { attributes: true });
+            });
+        });
+
+        // Enhanced input animations
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        console.log('InterviewAce Login Page Loaded Successfully!');
+
     </script>
 </body>
 </html>
