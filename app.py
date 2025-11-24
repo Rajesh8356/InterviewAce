@@ -691,7 +691,7 @@ def reset_password():
     finally:
         conn.close()
 
-
+'''
 def generate_pdf(user_id, results):
     pdf_filename = os.path.join(CSV_FOLDER, f'{user_id}_current_interview_results.pdf')
     doc = SimpleDocTemplate(pdf_filename, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
@@ -727,7 +727,261 @@ def generate_pdf(user_id, results):
 
     doc.build(content)
     return pdf_filename
+'''
+def generate_voice_results_pdf(user_id, results, total_score):
+    pdf_filename = os.path.join(CSV_FOLDER, f'{user_id}_voice_interview_results.pdf')
+    doc = SimpleDocTemplate(pdf_filename, pagesize=letter, 
+                          rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
 
+    # Enhanced Styles
+    styles = getSampleStyleSheet()
+    
+    # Title Style
+    title_style = ParagraphStyle(
+        'Title', 
+        parent=styles['Title'], 
+        fontSize=20, 
+        textColor=colors.HexColor('#1e3a8a'), 
+        spaceAfter=30,
+        alignment=1,  # Center aligned
+        fontName='Helvetica-Bold'
+    )
+    
+    # Header Style
+    header_style = ParagraphStyle(
+        'Header',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#374151'),
+        spaceAfter=12,
+        alignment=0  # Left aligned
+    )
+    
+    # Question Number Style
+    question_num_style = ParagraphStyle(
+        'QuestionNum',
+        parent=styles['Normal'],
+        fontSize=14,
+        textColor=colors.HexColor('#059669'),
+        spaceAfter=6,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Question Style
+    question_style = ParagraphStyle(
+        'Question',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#1f2937'),
+        spaceAfter=8,
+        leftIndent=10,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Answer Style
+    answer_style = ParagraphStyle(
+        'Answer',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#4b5563'),
+        spaceBefore=12,  
+        spaceAfter=10,
+        leftIndent=20,
+       
+    )
+    
+    # Score Style
+    score_style = ParagraphStyle(
+        'Score',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#dc2626'),
+        spaceAfter=8,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Feedback Header Style
+    feedback_header_style = ParagraphStyle(
+        'FeedbackHeader',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#7c3aed'),
+        spaceAfter=6,
+        fontName='Helvetica-Bold'
+    )
+    
+    # Feedback Style
+    feedback_style = ParagraphStyle(
+        'Feedback',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#6b7280'),
+        spaceBefore=8,  
+        spaceAfter=15,
+        leftIndent=15,
+       
+    )
+
+    content = []
+    
+    # Title Section
+    content.append(Paragraph("VOICE INTERVIEW RESULTS", title_style))
+    content.append(Spacer(1, 0.3*inch))
+    
+    # Header Information with borders
+    header_data = [
+        [Paragraph(f"<b>User ID:</b> {user_id}", header_style)],
+        [Paragraph(f"<b>Date:</b> {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}", header_style)],
+        [Paragraph(f"<b>Total Score:</b> {total_score}/{(len(results) * 10)} ({total_score/(len(results)*10)*100:.1f}%)", header_style)],
+        [Paragraph(f"<b>Total Questions:</b> {len(results)}", header_style)]
+    ]
+    
+    header_table = Table(header_data, colWidths=[5*inch])
+    header_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8f0')),
+        ('PADDING', (0, 0), (-1, -1), 10),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    content.append(header_table)
+    content.append(Spacer(1, 0.4*inch))
+    
+    # Questions Section
+    content.append(Paragraph("DETAILED QUESTION ANALYSIS", ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#1e40af'),
+        spaceAfter=20,
+        alignment=0
+    )))
+    
+    for i, result in enumerate(results, 1):
+        # Question Number and Question
+        content.append(Paragraph(f"Question {i}", question_num_style))
+        content.append(Paragraph(result['question'], question_style))
+        
+        # Answer with border
+        answer_text = result['answer'] if result['answer'] else "No answer provided"
+        content.append(Paragraph(f"<b>Your Answer:</b><br/>{answer_text}", answer_style))
+        
+        # Score
+        content.append(Paragraph(f"<b>Score:</b> {result['score']}/10", score_style))
+        
+        # Feedback with border
+        content.append(Paragraph("<b>Feedback:</b>", feedback_header_style))
+        
+        feedback_text = result['feedback']
+        if not feedback_text:
+            feedback_text = "No feedback available."
+        
+        # Format feedback points
+        formatted_feedback = ""
+        feedback_points = feedback_text.split('\n')
+        for point in feedback_points:
+            if point.strip():
+                # Remove existing bullet points if any and add proper formatting
+                clean_point = point.replace('•', '').replace('-', '').strip()
+                if clean_point:
+                    formatted_feedback += f"• {clean_point}<br/>"
+        
+        if not formatted_feedback:
+            formatted_feedback = "• No specific feedback points provided."
+            
+        content.append(Paragraph(formatted_feedback, feedback_style))
+        
+        # Add spacing between questions (except for last question)
+        if i < len(results):
+            content.append(Spacer(1, 0.3*inch))
+            # Add a separator line
+            content.append(Table([['']], colWidths=[6*inch], style=[
+                ('LINEABOVE', (0, 0), (-1, -1), 0.5, colors.HexColor('#e5e7eb')),
+                ('PADDING', (0, 0), (-1, -1), 5),
+            ]))
+            content.append(Spacer(1, 0.3*inch))
+        else:
+            content.append(Spacer(1, 0.2*inch))
+    
+    # Summary Section
+    content.append(PageBreak())
+    content.append(Paragraph("INTERVIEW SUMMARY", ParagraphStyle(
+        'SummaryHeader',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#1e40af'),
+        spaceAfter=20,
+        alignment=0
+    )))
+    
+    # Calculate statistics
+    total_possible = len(results) * 10
+    percentage = (total_score / total_possible * 100) if total_possible > 0 else 0
+    questions_answered = len([r for r in results if r.get('answer') and r['answer'].strip()])
+    
+    summary_data = [
+        ["Metric", "Value"],
+        ["Total Questions", str(len(results))],
+        ["Total Score", f"{total_score}/{total_possible}"],
+        ["Overall Percentage", f"{percentage:.1f}%"],
+        #["Average Score per Question", f"{total_score/len(results):.1f}/10" if results else "0.0/10"]
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[3*inch, 3*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3b82f6')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8fafc')),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 11),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+        ('PADDING', (0, 0), (-1, -1), 8),
+    ]))
+    
+    content.append(summary_table)
+    content.append(Spacer(1, 0.4*inch))
+    
+    # Performance Remarks
+    if percentage >= 80:
+        remark = "Excellent Performance - Strong understanding of concepts"
+        color = colors.HexColor('#059669')
+    elif percentage >= 60:
+        remark = "Good Performance - Solid foundation with room for improvement"
+        color = colors.HexColor('#d97706')
+    elif percentage >= 40:
+        remark = "Average Performance - Needs more practice and study"
+        color = colors.HexColor('#dc2626')
+    else:
+        remark = "Needs Improvement - Focus on fundamental concepts"
+        color = colors.HexColor('#dc2626')
+    
+    content.append(Paragraph("<b>Performance Remark:</b>", ParagraphStyle(
+        'RemarkHeader',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#374151'),
+        spaceAfter=8
+    )))
+    
+    content.append(Paragraph(remark, ParagraphStyle(
+        'Remark',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=color,
+        backColor=colors.HexColor('#fef3c7'),
+        borderPadding=12,
+        borderColor=colors.HexColor('#f59e0b'),
+        borderWidth=1,
+        spaceBefore=20,
+        spaceAfter=20
+    )))
+
+    doc.build(content)
+    return pdf_filename
 def send_email_with_attachments(to_email, current_pdf_path, all_attempts_pdf_path, user_id):
     from_email = "sharathsivakumar610@gmail.com"  # Replace with your email
     password = "nrdz lyxy xekq fszx"  # Replace with your app password
@@ -3369,17 +3623,17 @@ def end_interview():
         pdf_filename = generate_voice_results_pdf(user_id, results, total_score)
 
         # Get user email from database
-        conn = sqlite3.connect('reg.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT email FROM details WHERE user_id = ?", (user_id,))
-        user = cursor.fetchone()
-        conn.close()
+        #conn = sqlite3.connect('reg.db')
+        #conn.row_factory = sqlite3.Row
+        #cursor = conn.cursor()
+        #cursor.execute("SELECT email FROM details WHERE user_id = ?", (user_id,))
+        #user = cursor.fetchone()
+        #conn.close()
 
         # Send email if user has an email address
-        email_sent = False
-        if user and user['email']:
-            email_sent = send_voice_results_email(user['email'], pdf_filename, user_id, total_score, len(results))
+        #email_sent = False
+        #if user and user['email']:
+           # email_sent = send_voice_results_email(user['email'], pdf_filename, user_id, total_score, len(results))
 
         # Clear interview-specific session data but keep user_id for results page
         interview_keys = ['all_questions', 'answers', 'question_count', 'resume_text',
@@ -3424,36 +3678,45 @@ def recognize_speech_from_mic():
         print(f"Could not request results from Google Speech Recognition service; {e}")
         return ""
 
+
 @app.route('/voice_results')
 def voice_results():
     try:
         # Get evaluated answers from session
         evaluated_answers = session.get('evaluated_answers', [])
         total_score = session.get('total_score', 0)
-        overall_percentage = session.get('overall_percentage', 0)  # Get the percentage
+        overall_percentage = session.get('overall_percentage', 0)
         user_id = session.get('user_id', '')
 
         if not evaluated_answers:
             flash("No interview results found. Please complete an interview first.")
             return redirect(url_for('four', user_id=user_id))
 
+        # Calculate total_questions_answered - count questions that have actual answers
+        total_questions_answered = len([
+            ans for ans in evaluated_answers 
+            if ans.get('answer') and ans['answer'] != '(No answer provided)' and ans['answer'].strip()
+        ])
+
         # Clear the remaining session data after getting what we need
-        results_keys = ['evaluated_answers', 'total_score', 'overall_percentage']  # Add overall_percentage
-        for key in results_keys:
-            session.pop(key, None)
-        session.modified = True
+        #results_keys = ['evaluated_answers', 'total_score', 'overall_percentage']
+        #for key in results_keys:
+            #session.pop(key, None)
+        #session.modified = True
 
         return render_template(
             "voice_results.html",
             answers=evaluated_answers,
             total_score=total_score,
-            overall_percentage=overall_percentage  # Pass to template
+            total_questions_answered=total_questions_answered,
+            overall_percentage=overall_percentage
         )
 
     except Exception as e:
         logger.error(f"Error generating voice results: {str(e)}")
         flash("An error occurred while generating results")
         return redirect(url_for('four', user_id=session.get('user_id', '')))
+        
 
 def generate_voice_results_pdf(user_id, results, total_score):
     pdf_filename = os.path.join(CSV_FOLDER, f'{user_id}_voice_interview_results.pdf')
@@ -4079,7 +4342,36 @@ def get_analysis_data(user_id):
         "monthly_attempts": monthly_attempts,
         "monthly_scores": monthly_scores
     })
-    
+
+
+@app.route('/download_voice_results/<user_id>')
+def download_voice_results(user_id):
+    try:
+        # Get the results data from session
+        evaluated_answers = session.get('evaluated_answers', [])
+        total_score = session.get('total_score', 0)
+        
+        if not evaluated_answers:
+            flash("No results available to download. Please complete an interview first.")
+            return redirect(url_for('voice_results'))
+        
+        # Generate PDF
+        pdf_filename = generate_voice_results_pdf(user_id, evaluated_answers, total_score)
+        
+        # Send file for download
+        return send_file(
+            pdf_filename,
+            as_attachment=True,
+            download_name=f"voice_interview_results_{user_id}.pdf",
+            mimetype='application/pdf'
+        )
+        
+    except Exception as e:
+        logger.error(f"Error downloading voice results: {str(e)}")
+        flash("Error downloading results. Please try again.")
+        return redirect(url_for('voice_results'))
+
+
 @app.route('/download_scorecard/<user_id>')
 def download_scorecard(user_id):
     attempt_number = get_user_attempt_number(user_id)
@@ -4200,6 +4492,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
