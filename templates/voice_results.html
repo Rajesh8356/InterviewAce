@@ -95,7 +95,13 @@
                   text-decoration: none; border-radius: 6px; font-weight: 600;">
             Start New Interview
         </a>
+        <a href="{{ url_for('download_voice_results', user_id=session.get('user_id', '')) }}" 
+       style="display: inline-block; background: #059669; color: white; padding: 10px 20px; 
+              text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0 10px;">
+        📥 Download Results
+    </a>
     </div>
+
     <div style="text-align: center; margin-top: 20px;">
       <a href="{{ url_for('scorecard', user_id=session.get('user_id', '')) }}" 
        onclick="goToScorecard(event)"
