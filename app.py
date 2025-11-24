@@ -552,6 +552,57 @@ def forgot_userid():
     finally:
         conn.close()
 
+
+@app.route('/send-password-reset-code-phone', methods=['POST'])
+def send_password_reset_code_phone():
+    data = request.get_json()
+    phone = data.get('phone')
+
+    if not phone:
+        return jsonify({'success': False, 'error': 'Phone number is required'})
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if phone exists and get user_id
+        query = "SELECT user_id FROM details WHERE phone = ?"
+        cursor.execute(query, (phone,))
+        user = cursor.fetchone()
+
+        if not user:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Phone number not found'})
+
+        user_id = user['user_id']
+
+        # Generate a random 6-digit code
+        reset_code = str(random.randint(100000, 999999))
+
+        # Store reset code for phone verification
+        sms_verification_codes[phone] = {
+            'code': reset_code,
+            'timestamp': time.time(),
+            'user_id': user_id
+        }
+
+        # Send SMS
+        message = f"Your password reset code is: {reset_code}. This code will expire in 10 minutes."
+        sms_result = send_sms(phone, message)
+
+        conn.close()
+
+        if sms_result['success']:
+            return jsonify({'success': True, 'user_id': user_id})
+        else:
+            return jsonify({'success': False, 'error': sms_result['error']})
+
+    except Exception as e:
+        print(f"Error sending password reset SMS: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+    
+
+
 @app.route('/send-password-reset-code', methods=['POST'])
 def send_password_reset_code():
     data = request.get_json()
@@ -4149,6 +4200,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
