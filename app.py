@@ -1678,60 +1678,95 @@ def generate_unique_user_id():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
+    if request.method == 'GET':
+        # Render the registration form
+        return render_template('third.html')
+    
+    # Handle POST request
+    if request.is_json:
+        # Handle JSON request from the new flow
+        data = request.get_json()
+        name = data.get('name')
+        email = data.get('email')
+        phone = data.get('phone')
+        password = data.get('password')
+    else:
+        # Handle form data (for backward compatibility)
         name = request.form.get('name')
-        email = request.form.get('email')  # Keep email for record, but don't verify
+        email = request.form.get('email')
         phone = request.form.get('phone')
         password = request.form.get('password')
 
-        print(f"Processed data: name={name}, email={email}, phone={phone}")
+    print(f"Processed data: name={name}, email={email}, phone={phone}")
 
-        if not all([name, phone, password]):
+    if not all([name, phone, password]):
+        if request.is_json:
+            return jsonify({'success': False, 'error': 'Name, phone and password are required.'})
+        else:
             flash('Name, phone and password are required.', 'error')
             return redirect(url_for('register'))
 
-        # Check phone verification instead of email
-        verified_phone = session.get('verified_phone')
-        if verified_phone != phone:
+    # Check phone verification
+    verified_phone = session.get('verified_phone')
+    if verified_phone != phone:
+        if request.is_json:
+            return jsonify({'success': False, 'error': 'Please verify your phone number first.'})
+        else:
             flash('Please verify your phone number first.', 'error')
             return redirect(url_for('register'))
 
-        try:
-            # Generate unique user_id with LPxxxxx format
-            user_id = generate_unique_user_id()
+    try:
+        # Generate unique user_id with LPxxxxx format
+        user_id = generate_unique_user_id()
 
-            # Store plain password (no hashing)
-            plain_password = password
+        # Store plain password (no hashing)
+        plain_password = password
 
-            # Insert into DB
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO details (name, email, user_id, password, phone)
-                VALUES (?, ?, ?, ?, ?)
-            """, (name, email, user_id, plain_password, phone))
-            conn.commit()
-            conn.close()
+        # Insert into DB
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO details (name, email, user_id, password, phone)
+            VALUES (?, ?, ?, ?, ?)
+        """, (name, email, user_id, plain_password, phone))
+        conn.commit()
+        conn.close()
 
-            # Clear verification
-            session.pop('verified_phone', None)
+        # Clear verification
+        session.pop('verified_phone', None)
 
-            # Render success page with user_id
+        if request.is_json:
+            return jsonify({'success': True, 'user_id': user_id})
+        else:
             return render_template('success.html', user_id=user_id)
 
-        except sqlite3.IntegrityError as e:
-            flash('Registration failed. Please try again.', 'error')
-            logger.error(f"DB IntegrityError during registration: {e}")
-        except Exception as e:
-            flash('Registration failed. Please try again.', 'error')
-            logger.error(f"Registration error: {e}")
-        finally:
-            if 'conn' in locals():
-                conn.close()
+    except sqlite3.IntegrityError as e:
+        error_msg = 'Registration failed. Please try again.'
+        logger.error(f"DB IntegrityError during registration: {e}")
+        if request.is_json:
+            return jsonify({'success': False, 'error': error_msg})
+        else:
+            flash(error_msg, 'error')
+            return redirect(url_for('register'))
+    except Exception as e:
+        error_msg = 'Registration failed. Please try again.'
+        logger.error(f"Registration error: {e}")
+        if request.is_json:
+            return jsonify({'success': False, 'error': error_msg})
+        else:
+            flash(error_msg, 'error')
+            return redirect(url_for('register'))
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
-    # GET: Render the form
-    return render_template('third.html')
-
+@app.route('/registration-success')
+def registration_success():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        flash('Registration failed. Please try again.', 'error')
+        return redirect(url_for('register'))
+    return render_template('success.html', user_id=user_id)
 
 
 '''
@@ -4536,6 +4571,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
