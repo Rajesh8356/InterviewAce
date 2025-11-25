@@ -1643,13 +1643,6 @@ def check_user_id():
     else:
         return f"User {user_id} not found."
 
-@app.route('/registration-success')
-def registration_success():
-    user_id = request.args.get('user_id')
-    if not user_id:
-        flash('Registration failed. Please try again.', 'error')
-        return redirect(url_for('register'))
-    return render_template('success.html', user_id=user_id)
 
 def get_db_connection():
     conn = sqlite3.connect('reg.db')
@@ -4571,6 +4564,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
