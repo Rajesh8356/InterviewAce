@@ -326,7 +326,34 @@ def check_phone():
     except Exception as e:
         print(f"Error checking phone: {str(e)}")
         return jsonify({'exists': False})
-        
+
+
+
+@app.route('/check-phone-exists', methods=['POST'])
+def check_phone_exists():
+    """Check if phone number exists in database"""
+    data = request.get_json()
+    phone = data.get('phone')
+
+    if not phone:
+        return jsonify({'exists': False})
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = "SELECT user_id FROM details WHERE phone = ?"
+        cursor.execute(query, (phone,))
+        user = cursor.fetchone()
+        conn.close()
+
+        return jsonify({'exists': user is not None})
+
+    except Exception as e:
+        print(f"Error checking phone: {str(e)}")
+        return jsonify({'exists': False})
+
+
+
 @app.route('/check-email', methods=['GET'])
 def check_email():
     email = request.args.get('email')
@@ -661,6 +688,87 @@ def send_password_reset_code():
         return jsonify({'success': False, 'error': str(e)})
     finally:
         conn.close()
+
+
+
+
+
+    
+@app.route('/verify-password-reset-code-phone', methods=['POST'])
+def verify_password_reset_code_phone():
+    data = request.get_json()
+    phone = data.get('phone')
+    code = data.get('code')
+
+    if not phone or not code:
+        return jsonify({'success': False, 'error': 'Phone and code are required'})
+
+    try:
+        # Check if code is valid and not expired (10 minutes = 600 seconds)
+        stored = sms_verification_codes.get(phone)
+        if not stored:
+            return jsonify({'success': False, 'error': 'No verification code found for this phone number'})
+        
+        if stored['code'] != code:
+            return jsonify({'success': False, 'error': 'Invalid verification code'})
+            
+        if (time.time() - stored['timestamp']) > 600:
+            # Clear expired code
+            del sms_verification_codes[phone]
+            return jsonify({'success': False, 'error': 'Verification code has expired'})
+
+        # Code is valid - mark as verified in session
+        session['verified_password_reset'] = stored['user_id']
+        session['verified_phone'] = phone
+        
+        # Clear the used code
+        del sms_verification_codes[phone]
+
+        return jsonify({'success': True, 'user_id': stored['user_id']})
+
+    except Exception as e:
+        print(f"Error verifying password reset code: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+    
+
+@app.route('/reset-password-phone', methods=['POST'])
+def reset_password_phone():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    new_password = data.get('new_password')
+
+    if not user_id or not new_password:
+        return jsonify({'success': False, 'error': 'User ID and new password are required'})
+
+    # Check if phone was verified for this reset
+    if 'verified_password_reset' not in session or session['verified_password_reset'] != user_id:
+        return jsonify({'success': False, 'error': 'Phone verification required. Please complete verification first.'})
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Update password in database
+        query = "UPDATE details SET password = ? WHERE user_id = ?"
+        cursor.execute(query, (new_password, user_id))
+
+        if cursor.rowcount == 0:
+            return jsonify({'success': False, 'error': 'User not found'})
+
+        conn.commit()
+        
+        # Clear the verification session
+        session.pop('verified_password_reset', None)
+        session.pop('verified_phone', None)
+        
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print(f"Error resetting password: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+    finally:
+        conn.close()
+
 
 @app.route('/reset-password', methods=['POST'])
 def reset_password():
@@ -4564,6 +4672,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
