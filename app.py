@@ -94,8 +94,8 @@ ELEVENLABS_API_KEY = "sk_1023bd0bdb0b18345fcfa94e04d372840c84cfc1e2816c99"
 VOICE_ID = "EXAVITQu4vr4xnSDxMaL"
 
 # Face++ API Configuration
-FACEPP_API_KEY = "QuT7DlOQyJokapsSsLGr36TpRb5Fejg3"
-FACEPP_API_SECRET = "2yHpn5LRsyHlY_hHtfTKjo8xz10h3mlL"
+FACEPP_API_KEY = "JFi3PSFsSbIckASsq8CBVpBqq7zA5Fir"
+FACEPP_API_SECRET = "wRSm2bsFBcYlpzOUI3d9WAlG7v45tbHb"
 FACEPP_API_URL = "https://api-us.faceplusplus.com/facepp/v3/"
 
 UPLOAD_FOLDER = 'uploads/'
@@ -4672,6 +4672,7 @@ if __name__ == '__main__':
     if not os.path.exists(UPLOAD_FOLDER): 
         os.makedirs(UPLOAD_FOLDER) 
     app.run(debug=True)
+
 
 
 
